@@ -1,0 +1,7 @@
+{% if messages %}
+<div class="pf-messages">
+    {% for message in messages %}
+    <div class="pf-msg pf-msg--{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+</div>
+{% endif %}

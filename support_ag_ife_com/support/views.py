@@ -1,6 +1,14 @@
+import mimetypes
+import os
+from urllib.parse import quote
+
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import SuspiciousFileOperation
+from django.http import FileResponse, Http404, HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib import messages
+from django.utils._os import safe_join
 from .models import EmployeeProfile
 
 @login_required(login_url='login')
@@ -42,3 +50,27 @@ def profile(request):
         return redirect('profile')
 
     return render(request, 'support/profile.html', {'employee': employee})
+
+@login_required(login_url='login')
+def protected_media(request, path):
+    """
+    Файлы из MEDIA (вложения БЗ, фото сотрудников, вложения к вопросам)
+    отдаются только вошедшим пользователям.
+
+    В продакшене (MEDIA_X_ACCEL=True) Django лишь проверяет доступ, а сам файл
+    отдаёт nginx через внутренний location /protected-media/ (X-Accel-Redirect).
+    Без nginx (локальная разработка) файл отдаёт Django.
+    """
+    try:
+        full_path = safe_join(settings.MEDIA_ROOT, path)
+    except SuspiciousFileOperation:
+        raise Http404
+    if not os.path.isfile(full_path):
+        raise Http404
+
+    content_type = mimetypes.guess_type(full_path)[0] or 'application/octet-stream'
+    if settings.MEDIA_X_ACCEL:
+        response = HttpResponse(content_type=content_type)
+        response['X-Accel-Redirect'] = settings.MEDIA_X_ACCEL_PREFIX + quote(path)
+        return response
+    return FileResponse(open(full_path, 'rb'), content_type=content_type)

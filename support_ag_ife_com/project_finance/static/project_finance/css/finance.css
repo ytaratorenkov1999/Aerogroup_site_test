@@ -1,0 +1,363 @@
+/* project_finance/css/finance.css — «Финансы проектов · Микросайты» в стилистике сайта */
+
+.pf,
+.pf-dialog {
+  --pf-accent: #03a0dc;
+  --pf-accent-hover: #0288c1;
+  --pf-accent-soft: #e6f6fc;
+  --pf-text: #26262b;
+  --pf-muted: #6b6b70;
+  --pf-line: #e0e0e0;
+  --pf-fill: #f4f5f7;
+  --pf-paid: #2e8b57;
+  --pf-paid-soft: #e3f4ea;
+  --pf-due: #c77700;
+  --pf-due-soft: #fdf0dc;
+  --pf-danger: #e24b4a;
+  --pf-danger-soft: #fde8e7;
+  color: var(--pf-text);
+  font-size: 14px;
+}
+
+.pf *,
+.pf-dialog,
+.pf-dialog * {
+  box-sizing: border-box;
+}
+
+.pf [hidden],
+.pf-dialog [hidden] { display: none !important; }
+
+.pf-num {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.pf-muted { color: var(--pf-muted); }
+.pf-small { font-size: 13px; margin: 0; }
+.pf-r { text-align: right !important; }
+.pf-zero { color: #a8a8ad; }
+.pf-paid { color: var(--pf-paid); }
+.pf-due { color: var(--pf-due); font-weight: 600; }
+.pf-inline { display: inline; margin: 0; }
+.pf-mr-auto { margin-right: auto; }
+
+/* ── Сообщения ── */
+.pf-messages { display: grid; gap: 8px; margin-bottom: 14px; }
+.pf-msg {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--pf-line);
+  background: #fff;
+  font-size: 14px;
+}
+.pf-msg--success { border-color: #bfe3cc; background: var(--pf-paid-soft); color: #1f6b41; }
+.pf-msg--error { border-color: #f5c2c0; background: var(--pf-danger-soft); color: #a32b2a; }
+
+/* ── Шапка блока ── */
+.pf-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.pf-head__title { margin: 0 0 4px; font-size: 18px; font-weight: 600; }
+.pf-head p { margin: 0; }
+.pf-desc { margin-top: 8px !important; max-width: 70ch; white-space: pre-line; }
+.pf-tools { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.pf-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 14px 6px 8px;
+  border: 1px solid var(--pf-line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--pf-text);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: border-color .15s ease, color .15s ease;
+}
+.pf-back:hover { border-color: var(--pf-accent); color: var(--pf-accent); }
+.pf-back i { font-size: 16px; }
+
+.pf-tag {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--pf-fill);
+  color: var(--pf-muted);
+  font-size: 11px;
+  font-weight: 500;
+  vertical-align: 2px;
+}
+
+/* ── Кнопки ── */
+.pf-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--pf-accent);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--pf-accent);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
+  white-space: nowrap;
+}
+.pf-btn:hover { background: var(--pf-accent-soft); }
+.pf-btn:disabled { opacity: .5; cursor: not-allowed; background: #fff; }
+.pf-btn i { font-size: 16px; }
+.pf-btn--sm { height: 30px; padding: 0 10px; font-size: 12px; }
+.pf-btn--primary { background: var(--pf-accent); color: #fff; }
+.pf-btn--primary:hover { background: var(--pf-accent-hover); border-color: var(--pf-accent-hover); }
+.pf-btn--primary:disabled:hover { background: var(--pf-accent); }
+.pf-btn--ghost { border-color: transparent; }
+.pf-btn--danger { background: var(--pf-danger); border-color: var(--pf-danger); color: #fff; }
+.pf-btn--danger:hover { background: #c93a39; border-color: #c93a39; }
+.pf-btn--danger-text { border-color: transparent; color: var(--pf-danger); }
+.pf-btn--danger-text:hover { background: var(--pf-danger-soft); }
+
+.pf-icon-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--pf-muted);
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease;
+}
+.pf-icon-btn i { font-size: 17px; }
+.pf-icon-btn:hover { background: var(--pf-fill); color: var(--pf-text); }
+.pf-icon-btn--danger:hover { background: var(--pf-danger-soft); color: var(--pf-danger); }
+
+/* ── Таблицы ── */
+.pf-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--pf-line);
+  border-radius: 12px;
+  background: #fff;
+}
+.pf-table { width: 100%; border-collapse: collapse; }
+.pf-table th,
+.pf-table td {
+  padding: 11px 12px;
+  border-bottom: 1px solid #eeeeee;
+  text-align: left;
+  vertical-align: middle;
+}
+.pf-table th {
+  background: #fafafa;
+  color: var(--pf-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.pf-table tbody tr:last-child td { border-bottom: 0; }
+.pf-table tbody tr:hover td { background: #fcfcfd; }
+.pf-table tfoot td {
+  border-top: 2px solid var(--pf-text);
+  border-bottom: 0;
+  background: #fafafa;
+  font-weight: 600;
+}
+
+.pf-pname {
+  color: var(--pf-text);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.pf-pname:hover { color: var(--pf-accent); }
+
+.pf-empty { padding: 34px 16px; text-align: center; color: var(--pf-muted); }
+.pf-empty strong { display: block; margin-bottom: 4px; color: var(--pf-text); font-size: 15px; }
+
+/* Задачи */
+.pf-tasks th,
+.pf-tasks td { padding: 10px 8px; text-align: center; }
+.pf-tasks td.c-main,
+.pf-tasks th:nth-child(3) { text-align: left; }
+.pf-tasks td.c-act { width: 1%; padding-inline: 2px 6px; }
+.pf-task-title { font-weight: 600; }
+.pf-task-desc { margin-top: 2px; color: var(--pf-muted); font-size: 12px; }
+.pf-svc { font-size: 13px; }
+.pf-task.is-free .pf-amt b { color: var(--pf-muted); text-decoration: line-through; }
+.pf-row-actions { display: inline-flex; gap: 0; }
+
+.pf-pay {
+  display: inline-block;
+  padding: 4px 11px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+button.pf-pay { cursor: pointer; }
+button.pf-pay:hover { border-color: currentColor; }
+.pf-pay--yes { background: var(--pf-paid-soft); color: var(--pf-paid); }
+.pf-pay--no { background: var(--pf-due-soft); color: var(--pf-due); }
+.pf-pay--na { background: var(--pf-fill); color: var(--pf-muted); }
+
+/* ── Раскладка проекта ── */
+.pf-proj {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 18px;
+  align-items: start;
+}
+.pf-aside { display: grid; gap: 14px; min-width: 0; }
+
+.pf-card {
+  padding: 16px;
+  border: 1px solid var(--pf-line);
+  border-radius: 12px;
+  background: #fff;
+}
+.pf-card__title { margin: 0 0 10px; font-size: 15px; font-weight: 600; }
+.pf-card__row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+.pf-card__row .pf-card__title { margin: 0; }
+
+.pf-totals { display: grid; gap: 8px; }
+.pf-totals div { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.pf-big { font-size: 22px; font-weight: 700; color: var(--pf-text); }
+.pf-bar { height: 8px; margin-top: 12px; border-radius: 99px; background: var(--pf-due-soft); overflow: hidden; }
+.pf-bar span { display: block; height: 100%; background: var(--pf-paid); }
+.pf-hint { margin-top: 6px; color: var(--pf-muted); font-size: 12px; }
+
+.pf-price-list { list-style: none; margin: 0; padding: 0; }
+.pf-price-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px dashed var(--pf-line);
+  font-size: 13px;
+}
+.pf-price-list li:last-child { border-bottom: 0; }
+.pf-price-list--edit { margin-bottom: 14px; }
+.pf-price-list--edit li { align-items: center; }
+.pf-price-actions { display: flex; align-items: center; gap: 2px; }
+.pf-price-actions .pf-num { margin-right: 6px; }
+
+.pf-replace { display: block; padding: 12px !important; border-radius: 10px; background: var(--pf-danger-soft); }
+.pf-replace p { margin: 0 0 10px; }
+.pf-replace__row { display: flex; gap: 8px; flex-wrap: wrap; }
+.pf-replace__row select { flex: 1; min-width: 160px; }
+
+/* ── Окна ── */
+.pf-dialog {
+  width: min(560px, calc(100vw - 24px));
+  max-height: calc(100vh - 24px);
+  padding: 20px;
+  border: 1px solid var(--pf-line);
+  border-radius: 16px;
+  background: #fff;
+  color: #26262b;
+  font-size: 14px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, .2);
+  overflow: auto;
+}
+.pf-dialog--sm { width: min(440px, calc(100vw - 24px)); }
+.pf-dialog::backdrop { background: rgba(20, 24, 30, .45); }
+.pf-dialog__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+.pf-dialog__head h2 { margin: 0; font-size: 18px; font-weight: 600; }
+.pf-confirm-text { margin: 0 0 6px; line-height: 1.5; }
+
+.pf-form { display: grid; gap: 12px; }
+.pf-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.pf-field { display: grid; gap: 4px; }
+.pf-field > span { color: #6b6b70; font-size: 12px; font-weight: 500; }
+.pf-label { color: #6b6b70; font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; }
+
+.pf-dialog input:not([type=checkbox]),
+.pf-dialog select,
+.pf-dialog textarea {
+  width: 100%;
+  min-width: 0;
+  padding: 9px 11px;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  background: #fff;
+  color: #26262b;
+  font: inherit;
+  font-size: 14px;
+}
+.pf-dialog textarea { min-height: 84px; resize: vertical; }
+.pf-dialog input:focus,
+.pf-dialog select:focus,
+.pf-dialog textarea:focus { outline: 2px solid rgba(3, 160, 220, .2); border-color: #03a0dc; }
+.pf-dialog input:disabled { background: #f4f5f7; color: #a8a8ad; }
+
+.pf-check { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; }
+.pf-check input { width: 16px; height: 16px; accent-color: #03a0dc; }
+.pf-check--bottom { align-self: end; padding-bottom: 10px; }
+
+.pf-calc {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #e6f6fc;
+  font-size: 14px;
+}
+.pf-err { margin: 0; color: #e24b4a; font-size: 13px; }
+.pf-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+
+/* ── Адаптив ── */
+@media (max-width: 1100px) {
+  .pf-proj { grid-template-columns: minmax(0, 1fr); }
+  .pf-aside { order: -1; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+}
+
+@media (max-width: 700px) {
+  .pf-hide-sm { display: none; }
+  .pf-head { align-items: stretch; }
+  .pf-tools { width: 100%; }
+  .pf-tools .pf-btn { flex: 1; justify-content: center; }
+  .pf-head > .pf-btn { width: 100%; justify-content: center; }
+
+  /* Задачи — карточками */
+  .pf-tasks thead { display: none; }
+  .pf-tasks,
+  .pf-tasks tbody,
+  .pf-tasks tr,
+  .pf-tasks td { display: block; width: 100%; }
+  .pf-tasks tr.pf-task {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 5px 10px;
+    padding: 14px;
+    border-bottom: 1px solid #eeeeee;
+  }
+  .pf-tasks tr.pf-task td { padding: 0; border: 0; text-align: left; }
+  .pf-tasks td[data-l] { display: flex; justify-content: space-between; gap: 8px; grid-column: 1 / -1; font-size: 13px; }
+  .pf-tasks td[data-l]::before { content: attr(data-l); color: var(--pf-muted); font-size: 12px; }
+  .pf-tasks td.c-no { grid-column: 1 / -1; color: var(--pf-muted); font-size: 12px; }
+  .pf-tasks td.c-no::before { content: "№ "; }
+  .pf-tasks td.c-main { grid-column: 1 / -1; font-size: 15px; }
+  .pf-tasks td.c-act { grid-column: 1 / -1; width: 100%; margin-top: 2px; }
+
+  .pf-row2 { grid-template-columns: 1fr; }
+  .pf-check--bottom { padding-bottom: 0; }
+  .pf-dialog { padding: 16px; }
+}

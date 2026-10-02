@@ -1,4 +1,6 @@
 from decouple import config
+from django.templatetags.static import static
+from django.urls import reverse_lazy
 from pathlib import Path
 import os
 
@@ -30,6 +32,7 @@ CSRF_COOKIE_SAMESITE = 'Lax'
 
 
 INSTALLED_APPS = [
+    'unfold',  # Оформление админки — должно стоять до django.contrib.admin
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -44,6 +47,7 @@ INSTALLED_APPS = [
     'knowledge_check.apps.KnowledgeCheckConfig',
     'anonimaeroflot.apps.AnonimaeroflotConfig',
     'anonimrussia.apps.AnonimrussiaConfig',
+    'project_finance.apps.ProjectFinanceConfig',
 ]
 
 MIDDLEWARE = [
@@ -55,6 +59,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'support.middleware.AdminAccessMiddleware',  # Блокировка /admin/ по роли
+    'support.middleware.AdminRussianLocaleMiddleware',  # Админка на русском
 ]
 
 ROOT_URLCONF = 'support_ag_ife_com.urls'
@@ -176,14 +181,99 @@ LOGGING = {
             'level': config('LOG_LEVEL', default='INFO'),
             'propagate': False,
         },
+        'project_finance': {
+            'handlers': ['console', 'file'],
+            'level': config('LOG_LEVEL', default='INFO'),
+            'propagate': False,
+        },
 
     },
 }
 
 LOGIN_URL = 'login'
+# Куда вести после входа через /admin/login/ без ?next= (вход на сайт редиректит сам, см. support/auth.py)
+LOGIN_REDIRECT_URL = 'admin:index'
+
+# Переводы, которых нет в пакетах (строки интерфейса django-unfold)
+LOCALE_PATHS = [BASE_DIR / 'locale']
+
+
+# ── Оформление админки (django-unfold) ───────────────────────────────────────
+
+def _admin_link(name):
+    return reverse_lazy(f'admin:{name}_changelist')
+
+
+UNFOLD = {
+    'SITE_TITLE':     'Aerogroup',
+    'SITE_HEADER':    'Aerogroup',
+    'SITE_SUBHEADER': 'Панель администратора',
+    'SITE_URL':       '/',
+    'SITE_ICON':      lambda request: static('support/images/logo_icon.png'),
+    'SITE_FAVICONS': [
+        {'rel': 'icon', 'type': 'image/png', 'href': lambda request: static('support/images/logo_icon.png')},
+    ],
+    'BORDER_RADIUS': '8px',
+    # Фирменный голубой сайта (#03a0dc) как основной цвет
+    'COLORS': {
+        'primary': {
+            '50':  '#e6f6fc', '100': '#cdeef9', '200': '#9bdcf3', '300': '#69cbed',
+            '400': '#37b9e7', '500': '#03a0dc', '600': '#0384b6', '700': '#02678e',
+            '800': '#024b67', '900': '#012f41', '950': '#011f2b',
+        },
+    },
+    'SIDEBAR': {
+        'show_search': True,
+        'show_all_applications': False,
+        'navigation': [
+            {
+                'title': 'Сотрудники и регистрация пользователей',
+                'items': [
+                    {'title': 'Сотрудники', 'icon': 'badge',                'link': _admin_link('support_employee')},
+                    {'title': 'Отделы',     'icon': 'apartment',            'link': _admin_link('support_department')},
+                    {'title': 'Роли',       'icon': 'admin_panel_settings', 'link': _admin_link('support_role')},
+                ],
+            },
+            {
+                'title': 'База знаний | Аэрофлот',
+                'collapsible': True,
+                'items': [
+                    {'title': 'Статьи',       'icon': 'article',     'link': _admin_link('aeroflot_bdaeroflotarticle')},
+                    {'title': 'Категории',    'icon': 'folder',      'link': _admin_link('aeroflot_bdaeroflotcategory')},
+                    {'title': 'Вложения',     'icon': 'attach_file', 'link': _admin_link('aeroflot_bdaeroflotattachment')},
+                    {'title': 'Ознакомления', 'icon': 'task_alt',    'link': _admin_link('aeroflot_articleacknowledgement')},
+                ],
+            },
+            {
+                'title': 'База знаний | Россия',
+                'collapsible': True,
+                'items': [
+                    {'title': 'Статьи',       'icon': 'article',     'link': _admin_link('russia_bdrussiaarticle')},
+                    {'title': 'Категории',    'icon': 'folder',      'link': _admin_link('russia_bdrussiacategory')},
+                    {'title': 'Вложения',     'icon': 'attach_file', 'link': _admin_link('russia_bdrussiaattachment')},
+                    {'title': 'Ознакомления', 'icon': 'task_alt',    'link': _admin_link('russia_russiaarticleacknowledgement')},
+                ],
+            },
+            {
+                'title': 'Проверка знаний',
+                'items': [
+                    {'title': 'Категории тестирования', 'icon': 'quiz',       'link': _admin_link('knowledge_check_testcategory')},
+                    {'title': 'Вопросы',                'icon': 'help',       'link': _admin_link('knowledge_check_question')},
+                    {'title': 'Попытки прохождения',    'icon': 'fact_check', 'link': _admin_link('knowledge_check_userattempt')},
+                    {'title': 'Разрешения на повтор',   'icon': 'replay',     'link': _admin_link('knowledge_check_retakeproxy')},
+                ],
+            },
+        ],
+    },
+}
 
 MEDIA_URL  = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+# Файлы MEDIA отдаются только вошедшим (support.views.protected_media).
+# MEDIA_X_ACCEL=True — проверку делает Django, а файл отдаёт nginx из internal
+# location /protected-media/ (nginx/nginx.conf). По умолчанию включено вне DEBUG.
+MEDIA_X_ACCEL        = config('MEDIA_X_ACCEL', default=not DEBUG, cast=bool)
+MEDIA_X_ACCEL_PREFIX = '/protected-media/'
 
 # Email настройки
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

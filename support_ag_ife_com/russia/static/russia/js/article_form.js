@@ -1,6 +1,13 @@
 (function () {
     'use strict';
 
+    // Экранирование данных с сервера перед вставкой в innerHTML (защита от XSS)
+    function escapeHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, ch => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        })[ch]);
+    }
+
     const CSRF = document.querySelector('[name=csrfmiddlewaretoken]').value;
     const ATTACHMENT_DELETE_URL = window.RUSSIA_URLS.attachmentDeleteBase;
 
@@ -137,10 +144,10 @@
             card.innerHTML = `
                 <div class="file-info">
                     <div class="file-type-badge-sm file-type-img">IMG</div>
-                    <span class="file-name">${data.file_name}</span>
+                    <span class="file-name">${escapeHtml(data.file_name)}</span>
                 </div>
                 <button type="button" class="attachment-delete-btn"
-                        data-attachment-id="${data.attachment_id}" title="Удалить">×</button>`;
+                        data-attachment-id="${escapeHtml(data.attachment_id)}" title="Удалить">×</button>`;
             card.querySelector('.attachment-delete-btn').addEventListener('click', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -196,7 +203,7 @@
                 <div class="file-info">
                     ${getIcon(file.name)}
                     <div>
-                        <div class="file-name-text">${file.name}</div>
+                        <div class="file-name-text">${escapeHtml(file.name)}</div>
                         <div class="file-size">${fmtSize(file.size)}</div>
                     </div>
                 </div>

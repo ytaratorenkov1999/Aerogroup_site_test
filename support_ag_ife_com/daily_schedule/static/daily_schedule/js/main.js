@@ -1,4 +1,11 @@
 let currentDate = new Date();
+
+// Экранирование данных с сервера перед вставкой в innerHTML (защита от XSS)
+function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, ch => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    })[ch]);
+}
 let employees = [];
 let scheduleData = {};
 
@@ -80,7 +87,7 @@ function renderTable() {
     employees.forEach((emp, index) => {
         html += `<tr class="employee-row">
             <td class="number-column">${index + 1}</td>
-            <td class="fio-column">${emp.name}</td>`;
+            <td class="fio-column">${escapeHtml(emp.name)}</td>`;
 
         for (let d = 1; d <= daysInMonth; d++) {
             const date    = new Date(year, month, d);
@@ -92,7 +99,7 @@ function renderTable() {
             const statusClass = status ? STATUS_CLASSES[status] : (isWE ? 'weekend' : '');
 
             html += `<td class="day-cell ${statusClass}"
-                         data-employee-id="${emp.id}"
+                         data-employee-id="${escapeHtml(emp.id)}"
                          data-date="${dateKey}"
                          data-status="${status}"
                          data-is-weekend="${isWE}">

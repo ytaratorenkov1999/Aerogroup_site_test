@@ -12,23 +12,34 @@ support/roles.py
         ...
 
 Вспомогательные функции:
-    get_user_role(user)  → строка с названием роли или None
+    get_user_role(user)  → код уровня доступа (ROLE_*) или None
     has_role(user, *roles) → bool
     can_edit(user)       → bool  (Администратор, Руководитель, Редактор)
     can_delete(user)     → bool  (Администратор, Руководитель)
     can_edit_schedule(user) → bool (Администратор, Руководитель)
+    is_admin(user)       → bool  (Администратор или суперпользователь)
 """
 
 from functools import wraps
 from django.shortcuts import redirect
 from django.http import HttpResponseForbidden
 
-# ── Названия ролей (точно как в БД) ──────────────────────────────────────────
-ROLE_ADMIN    = 'Администратор'
-ROLE_MANAGER  = 'Руководитель'
-ROLE_EDITOR   = 'Редактор'
-ROLE_READER   = 'Читатель'
-ROLE_EXTERNAL = 'Сторонний отдел'
+# ── Уровни доступа (Role.code) ───────────────────────────────────────────────
+# Права проверяются по коду, а не по названию роли: название в админке можно
+# переименовать без потери доступа. Код выбирается из списка ROLE_CHOICES.
+ROLE_ADMIN    = 'admin'
+ROLE_MANAGER  = 'manager'
+ROLE_EDITOR   = 'editor'
+ROLE_READER   = 'reader'
+ROLE_EXTERNAL = 'external'
+
+ROLE_CHOICES = [
+    (ROLE_ADMIN,    'Администратор'),
+    (ROLE_MANAGER,  'Руководитель'),
+    (ROLE_EDITOR,   'Редактор'),
+    (ROLE_READER,   'Читатель'),
+    (ROLE_EXTERNAL, 'Сторонний отдел'),
+]
 
 # Роли у которых нет права на Django-admin (проверяется в middleware)
 ROLES_NO_ADMIN = {ROLE_MANAGER, ROLE_EDITOR, ROLE_READER, ROLE_EXTERNAL}
@@ -44,12 +55,12 @@ ROLES_CAN_EDIT_SCHEDULE = {ROLE_ADMIN, ROLE_MANAGER}
 
 
 def get_user_role(user):
-    """Возвращает название роли пользователя или None."""
+    """Возвращает код уровня доступа пользователя (ROLE_*) или None."""
     if not user or not user.is_authenticated:
         return None
     try:
         role = user.profile.role
-        return role.name if role else None
+        return role.code if role else None
     except Exception:
         return None
 
@@ -67,6 +78,27 @@ def can_edit(user):
 def can_delete(user):
     """Может удалять статьи и категории."""
     return has_role(user, ROLE_ADMIN, ROLE_MANAGER)
+
+
+def is_admin(user):
+    """Администратор сайта: роль «Администратор» или суперпользователь Django."""
+    if not user or not user.is_authenticated:
+        return False
+    return user.is_superuser or get_user_role(user) == ROLE_ADMIN
+
+
+def admin_required(view_func):
+    """Декоратор: только для is_admin(), остальным — 403."""
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not is_admin(request.user):
+            return HttpResponseForbidden(
+                '<h2>403 — Недостаточно прав</h2>'
+                '<p>Раздел доступен только администраторам.</p>'
+                '<a href="/">← На главную</a>'
+            )
+        return view_func(request, *args, **kwargs)
+    return wrapper
 
 
 def can_edit_schedule(user):

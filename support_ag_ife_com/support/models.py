@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+from .roles import ROLE_CHOICES
+
 
 class Department(models.Model):
     """Отдел"""
@@ -15,8 +17,13 @@ class Department(models.Model):
 
 
 class Role(models.Model):
-    """Роль — для будущих ролевых моделей"""
-    name = models.CharField(max_length=150)
+    """Роль сотрудника. Права определяются уровнем доступа (code), название — только подпись."""
+    name = models.CharField(max_length=150, verbose_name='Название')
+    code = models.CharField(
+        max_length=20, choices=ROLE_CHOICES, unique=True, null=True, blank=True,
+        verbose_name='Уровень доступа',
+        help_text='Определяет права на сайте. Название роли можно менять свободно — права от него не зависят.',
+    )
 
     class Meta:
         verbose_name = 'Роль'
@@ -62,3 +69,12 @@ class EmployeeProfile(models.Model):
         if self.photo:
             return self.photo.url
         return 'support/images/avatar_man.jpg'
+
+
+class Employee(User):
+    """Proxy над User — чтобы учётные записи жили в разделе «Сотрудники» админки"""
+
+    class Meta:
+        proxy = True
+        verbose_name = 'Сотрудник'
+        verbose_name_plural = 'Сотрудники'

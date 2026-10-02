@@ -1,0 +1,34 @@
+{# Окно создания / изменения проекта. project — None для нового #}
+<dialog class="pf-dialog" id="dlgProject">
+    <form method="post" action="{% if project %}{% url 'project_finance:project_edit' project.pk %}{% else %}{% url 'project_finance:project_create' %}{% endif %}" class="pf-form">
+        {% csrf_token %}
+        <div class="pf-dialog__head">
+            <h2>{% if project %}Изменить проект{% else %}Новый проект{% endif %}</h2>
+            <button type="button" class="pf-icon-btn" data-close aria-label="Закрыть"><i class="ti ti-x"></i></button>
+        </div>
+        <label class="pf-field"><span>Название</span>
+            <input name="name" required maxlength="120" value="{{ project.name|default:'' }}" placeholder="Например, Викторины">
+        </label>
+        <label class="pf-field"><span>Описание (необязательно)</span>
+            <textarea name="description" maxlength="4000">{{ project.description|default:'' }}</textarea>
+        </label>
+        <label class="pf-field"><span>Статус</span>
+            <select name="status">
+                {% for value, label in status_choices %}
+                <option value="{{ value }}" {% if project.status == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <div class="pf-actions">
+            {% if project %}
+            <button type="submit" class="pf-btn pf-btn--danger-text pf-mr-auto"
+                    formaction="{% url 'project_finance:project_delete' project.pk %}" formnovalidate
+                    data-confirm="Удалить проект «{{ project.name }}» вместе с прайсом и задачами ({{ tasks|length }})? Это нельзя отменить. Если проект просто завершён, лучше переведите его в архив.">
+                Удалить проект
+            </button>
+            {% endif %}
+            <button type="button" class="pf-btn" data-close>Отмена</button>
+            <button type="submit" class="pf-btn pf-btn--primary">Сохранить</button>
+        </div>
+    </form>
+</dialog>

@@ -11,10 +11,11 @@ from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 
 from .models import (
+    CATEGORY_CYCLE_ERROR,
     BdRussiaCategory, BdRussiaArticle, BdRussiaAttachment,
     RussiaArticleNotification, RussiaArticleAcknowledgement,
 )
-from support.roles import role_required
+from support.roles import role_required, ROLE_ADMIN, ROLE_MANAGER, ROLE_EDITOR
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +33,21 @@ def _validate_attachment_file(file):
     if ext not in ALLOWED_ATTACHMENT_EXTENSIONS:
         return f'Недопустимый тип файла: {ext}. Разрешены: {", ".join(sorted(ALLOWED_ATTACHMENT_EXTENSIONS))}'
     return None
+
+
+def _existing_category_id(raw):
+    """id существующей категории из POST или None — если пусто, не число или такой нет."""
+    try:
+        pk = int(raw)
+    except (TypeError, ValueError):
+        return None
+    return pk if BdRussiaCategory.objects.filter(pk=pk).exists() else None
+
+
+def _parent_choices(category):
+    """Категории, которые можно выбрать родителем: без самой категории и её подкатегорий."""
+    excluded = {category.id} | category.get_descendant_ids()
+    return BdRussiaCategory.objects.exclude(id__in=excluded).select_related('parent', 'parent__parent')
 
 
 def _safe_preview(content, max_len=150):
@@ -73,15 +89,29 @@ def _build_knowledge_structure():
         for c in all_categories
     }
 
+    # Расставляем подкатегории. Узлы, зацикленные через parent (старые данные),
+    # становятся корневыми — иначе они пропадают из дерева.
+    parent_of = {c['id']: c['parent_id'] for c in all_categories}
+
+    def creates_cycle(node_id, parent_id):
+        seen = set()
+        current = parent_id
+        while current is not None and current not in seen:
+            if current == node_id:
+                return True
+            seen.add(current)
+            current = parent_of.get(current)
+        return False
+
     roots = []
     for node in nodes.values():
         parent_id = node.pop('_parent_id')
         if parent_id is None:
             roots.append(node)
-        elif parent_id in nodes and parent_id != node['id']:
+        elif parent_id in nodes and not creates_cycle(node['id'], parent_id):
             nodes[parent_id]['subcategories'].append(node)
         else:
-            logger.warning("Категория id=%d имеет несуществующего родителя id=%s", node['id'], parent_id)
+            logger.warning("Категория id=%d: родитель id=%s не найден или образует цикл", node['id'], parent_id)
             roots.append(node)
 
     return roots
@@ -141,17 +171,22 @@ def category_detail(request, category_slug):
 
 
 @login_required
-@role_required('Администратор', 'Руководитель', 'Редактор')
+@role_required(ROLE_ADMIN, ROLE_MANAGER, ROLE_EDITOR)
 def category_create(request):
     if request.method == 'POST':
         name = request.POST.get('name', '').strip()
         if not name:
             messages.error(request, 'Название категории обязательно')
             return redirect('russia:index')
+        raw_parent = request.POST.get('parent_id') or None
+        parent_id  = _existing_category_id(raw_parent)
+        if raw_parent and parent_id is None:
+            messages.error(request, 'Родительская категория не найдена')
+            return redirect('russia:index')
         category = BdRussiaCategory.objects.create(
             name=name,
             description=request.POST.get('description', ''),
-            parent_id=request.POST.get('parent_id') or None,
+            parent_id=parent_id,
             creator=request.user,
         )
         logger.info("Категория Russia создана: id=%d '%s', пользователь='%s'",
@@ -166,7 +201,7 @@ def category_create(request):
 
 
 @login_required
-@role_required('Администратор', 'Руководитель', 'Редактор')
+@role_required(ROLE_ADMIN, ROLE_MANAGER, ROLE_EDITOR)
 def category_edit(request, category_id):
     category = get_object_or_404(BdRussiaCategory, id=category_id)
     if request.method == 'POST':
@@ -174,10 +209,22 @@ def category_edit(request, category_id):
         if not name:
             messages.error(request, 'Название не может быть пустым')
             return redirect('russia:index')
+        raw_parent = request.POST.get('parent_id') or None
+        parent_id  = _existing_category_id(raw_parent)
+        if raw_parent and parent_id is None:
+            messages.error(request, 'Родительская категория не найдена')
+            return redirect('russia:index')
+        if not category.is_valid_parent(parent_id):
+            return render(request, 'russia/category_form.html', {
+                'title': 'Редактировать категорию',
+                'category': category,
+                'categories': _parent_choices(category),
+                'parent_error': CATEGORY_CYCLE_ERROR,
+            })
         old_name = category.name
         category.name        = name
         category.description = request.POST.get('description', '')
-        category.parent_id   = request.POST.get('parent_id') or None
+        category.parent_id   = parent_id
         category.save()
         logger.info("Категория Russia обновлена: id=%d '%s'→'%s', пользователь='%s'",
                     category.id, old_name, name, request.user.username)
@@ -186,13 +233,13 @@ def category_edit(request, category_id):
     return render(request, 'russia/category_form.html', {
         'title':      'Редактировать категорию',
         'category':   category,
-        'categories': BdRussiaCategory.objects.exclude(id=category_id).select_related('parent', 'parent__parent'),
+        'categories': _parent_choices(category),
     })
 
 
 @login_required
 @require_POST
-@role_required('Администратор', 'Руководитель')
+@role_required(ROLE_ADMIN, ROLE_MANAGER)
 def category_delete(request, category_id):
     category = get_object_or_404(BdRussiaCategory, id=category_id)
     logger.info("Категория Russia удалена: id=%d '%s', пользователь='%s'",
@@ -202,7 +249,7 @@ def category_delete(request, category_id):
 
 
 @login_required
-@role_required('Администратор', 'Руководитель', 'Редактор')
+@role_required(ROLE_ADMIN, ROLE_MANAGER, ROLE_EDITOR)
 def article_create(request):
     if request.method == 'POST':
         title       = request.POST.get('title', '').strip()
@@ -213,6 +260,7 @@ def article_create(request):
         if not title:       errors['title']    = 'Введите название статьи'
         if not content:     errors['content']  = 'Введите содержание статьи'
         if not category_id: errors['category'] = 'Выберите категорию'
+        elif _existing_category_id(category_id) is None: errors['category'] = 'Выбранная категория не найдена'
 
         attachment_error = None
         for f in request.FILES.getlist('attachments'):
@@ -280,7 +328,7 @@ def article_detail(request, article_slug):
 
 
 @login_required
-@role_required('Администратор', 'Руководитель', 'Редактор')
+@role_required(ROLE_ADMIN, ROLE_MANAGER, ROLE_EDITOR)
 def article_edit(request, article_slug):
     article = get_object_or_404(BdRussiaArticle, slug=article_slug)
     if request.method == 'POST':
@@ -292,6 +340,7 @@ def article_edit(request, article_slug):
         if not title:       errors['title']    = 'Введите название статьи'
         if not content:     errors['content']  = 'Введите содержание статьи'
         if not category_id: errors['category'] = 'Выберите категорию'
+        elif _existing_category_id(category_id) is None: errors['category'] = 'Выбранная категория не найдена'
 
         attachment_error = None
         for f in request.FILES.getlist('attachments'):
@@ -340,7 +389,7 @@ def article_edit(request, article_slug):
 
 @login_required
 @require_POST
-@role_required('Администратор', 'Руководитель')
+@role_required(ROLE_ADMIN, ROLE_MANAGER)
 def article_delete(request, article_slug):
     article = get_object_or_404(BdRussiaArticle, slug=article_slug)
     category_slug = article.category.slug
@@ -352,7 +401,7 @@ def article_delete(request, article_slug):
 
 @login_required
 @require_POST
-@role_required('Администратор', 'Руководитель', 'Редактор')
+@role_required(ROLE_ADMIN, ROLE_MANAGER, ROLE_EDITOR)
 def attachment_delete(request, attachment_id):
     attachment = get_object_or_404(BdRussiaAttachment, id=attachment_id)
     logger.info("Вложение Russia удалено: id=%d '%s', пользователь='%s'",
@@ -363,7 +412,7 @@ def attachment_delete(request, attachment_id):
 
 @login_required
 @require_POST
-@role_required('Администратор', 'Руководитель', 'Редактор')
+@role_required(ROLE_ADMIN, ROLE_MANAGER, ROLE_EDITOR)
 def attachment_delete_pending(request, attachment_id):
     attachment = get_object_or_404(
         BdRussiaAttachment, id=attachment_id, article__isnull=True
@@ -374,7 +423,7 @@ def attachment_delete_pending(request, attachment_id):
 
 @login_required
 @require_POST
-@role_required('Администратор', 'Руководитель', 'Редактор')
+@role_required(ROLE_ADMIN, ROLE_MANAGER, ROLE_EDITOR)
 def attachment_upload_image(request):
     file = request.FILES.get('image')
     if not file:

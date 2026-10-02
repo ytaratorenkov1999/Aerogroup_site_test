@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% load static finance %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'project_finance/css/finance.css' %}?v=1">
+
+<div class="pf">
+    {% include 'project_finance/_messages.html' %}
+
+    <div class="pf-head">
+        <div>
+            <h2 class="pf-head__title">Сводка по всем проектам</h2>
+            <p class="pf-muted">Выполненная работа по микросайтам: сколько начислено, оплачено и ждёт оплаты.</p>
+        </div>
+        <button type="button" class="pf-btn pf-btn--primary" data-open="dlgProject"><i class="ti ti-plus"></i> Проект</button>
+    </div>
+
+    <div class="pf-table-wrap">
+        <table class="pf-table pf-summary">
+            <thead>
+                <tr>
+                    <th>Проект</th>
+                    <th class="pf-r pf-hide-sm">Задач</th>
+                    <th class="pf-r">Всего</th>
+                    <th class="pf-r">Оплачено</th>
+                    <th class="pf-r">Не оплачено</th>
+                    <th class="pf-hide-sm"></th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for row in rows %}
+                <tr>
+                    <td>
+                        <a class="pf-pname" href="{% url 'project_finance:project' row.project.pk %}">{{ row.project.name }}</a>
+                        {% if row.project.status != 'active' %}<span class="pf-tag">{{ row.project.get_status_display|lower }}</span>{% endif %}
+                    </td>
+                    <td class="pf-r pf-num pf-hide-sm {% if not row.count %}pf-zero{% endif %}">{{ row.count }}</td>
+                    <td class="pf-r pf-num {% if not row.total %}pf-zero{% endif %}">{{ row.total|rub }}</td>
+                    <td class="pf-r pf-num {% if row.paid %}pf-paid{% else %}pf-zero{% endif %}">{{ row.paid|rub }}</td>
+                    <td class="pf-r pf-num {% if row.due %}pf-due{% else %}pf-zero{% endif %}">{{ row.due|rub }}</td>
+                    <td class="pf-r pf-hide-sm"><a class="pf-btn pf-btn--sm" href="{% url 'project_finance:project' row.project.pk %}">Открыть</a></td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="6">
+                    <div class="pf-empty"><strong>Проектов пока нет</strong>Создайте проект кнопкой «+ Проект».</div>
+                </td></tr>
+            {% endfor %}
+            </tbody>
+            {% if rows %}
+            <tfoot>
+                <tr>
+                    <td>ИТОГО</td>
+                    <td class="pf-r pf-num pf-hide-sm">{{ grand.count }}</td>
+                    <td class="pf-r pf-num">{{ grand.total|rub }}</td>
+                    <td class="pf-r pf-num">{{ grand.paid|rub }}</td>
+                    <td class="pf-r pf-num">{{ grand.due|rub }}</td>
+                    <td class="pf-hide-sm"></td>
+                </tr>
+            </tfoot>
+            {% endif %}
+        </table>
+    </div>
+</div>
+
+{% include 'project_finance/_project_dialog.html' with project=None %}
+{% include 'project_finance/_confirm_dialog.html' %}
+<script src="{% static 'project_finance/js/finance.js' %}?v=1"></script>
+{% endblock %}

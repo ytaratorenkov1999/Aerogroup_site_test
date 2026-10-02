@@ -1,0 +1,1009 @@
+/*
+ * support/css/mobile.css — мобильная версия интерфейса (экраны < 600px).
+ *
+ * Подключается в base.html и login.html после base.css. Стили страниц
+ * подключаются позже внутри {% block content %}, поэтому все правила здесь
+ * начинаются с body.m-ui — так они сильнее одноимённых правил страниц.
+ * На экранах от 600px этот файл ничего не меняет.
+ */
+
+/* Мобильные элементы на десктопе скрыты */
+.m-topbar,
+.m-tabbar,
+.m-segment,
+.m-all-sections {
+  display: none;
+}
+
+@media (max-width: 599px) {
+  body.m-ui {
+    --m-text: #1d1d1f;
+    --m-muted: #6b6b70;
+    --m-line: #e5e5ea;
+    --m-fill: #f2f2f4;
+    --m-card: #fafafa;
+    --m-accent: #03a0dc;
+    --m-radius: 16px;
+    --m-topbar-h: 60px;
+    --m-tabbar-h: 64px;
+    background: #fff;
+  }
+
+  /* ── Каркас: прокручивается вся страница, а не внутренний блок ── */
+  html:has(body.m-ui),
+  body.m-ui {
+    height: auto;
+    min-height: 100%;
+  }
+
+  body.m-ui .main {
+    display: block;
+    height: auto;
+  }
+
+  body.m-ui .main-container {
+    min-height: 100vh;
+    padding: calc(var(--m-topbar-h) + 8px) 16px calc(var(--m-tabbar-h) + 24px + env(safe-area-inset-bottom));
+  }
+
+  body.m-ui .content {
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    padding: 0;
+    font-size: 15px;
+  }
+
+  body.m-ui .content *,
+  body.m-ui .content *::before,
+  body.m-ui .content *::after {
+    box-sizing: border-box;
+  }
+
+  body.m-ui .main-container .header h1 {
+    color: var(--m-text);
+    font-size: 30px;
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.5px;
+    margin: 14px 0 16px;
+  }
+
+  /* Бургер не нужен — его роль у нижних вкладок и пункта «Все разделы» */
+  body.m-ui .menu-toggle {
+    display: none;
+  }
+
+  /* ── Верхняя панель: логотип · поиск · колокольчик · аватар ── */
+  body.m-ui .m-topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 290;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: var(--m-topbar-h);
+    padding: 0 112px 0 16px;
+    background: rgba(255, 255, 255, 0.94);
+    -webkit-backdrop-filter: saturate(180%) blur(12px);
+    backdrop-filter: saturate(180%) blur(12px);
+    border-bottom: 1px solid var(--m-line);
+  }
+
+  body.m-ui .m-topbar__logo {
+    display: flex;
+    flex-shrink: 0;
+  }
+
+  body.m-ui .m-topbar__logo img {
+    height: 30px;
+    width: auto;
+    display: block;
+  }
+
+  body.m-ui .m-topbar__search {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 38px;
+    padding: 0 12px;
+    border-radius: 12px;
+    background: var(--m-fill);
+    color: var(--m-muted);
+    font-size: 14px;
+    text-decoration: none;
+  }
+
+  body.m-ui .m-topbar__search i {
+    font-size: 18px;
+  }
+
+  /* Колокольчик и профиль (существующая разметка) встают в правый угол панели */
+  body.m-ui .login-profile {
+    position: fixed;
+    top: 10px;
+    right: 16px;
+    z-index: 300;
+    margin: 0;
+    gap: 8px;
+  }
+
+  body.m-ui .notif-bell,
+  body.m-ui .login-profile .profile {
+    width: 40px;
+    height: 40px;
+  }
+
+  body.m-ui .notif-bell {
+    border-color: transparent;
+    background: var(--m-fill);
+  }
+
+  body.m-ui .notif-bell i {
+    color: var(--m-text);
+  }
+
+  body.m-ui .notif-badge {
+    top: -3px;
+    right: -3px;
+    min-width: 18px;
+    height: 18px;
+    font-size: 11px;
+  }
+
+  body.m-ui .notif-dropdown {
+    position: fixed;
+    top: calc(var(--m-topbar-h) + 6px);
+    right: 12px;
+    left: 12px;
+    width: auto;
+    max-width: none;
+  }
+
+  body.m-ui .profile-dropdown {
+    position: fixed;
+    top: calc(var(--m-topbar-h) + 6px);
+    right: 12px;
+    min-width: 220px;
+  }
+
+  body.m-ui .m-all-sections {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 12px 16px;
+    border: 0;
+    border-bottom: 1px solid var(--m-line);
+    background: none;
+    color: var(--m-text);
+    font: inherit;
+    font-size: 14px;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  body.m-ui .m-all-sections i {
+    font-size: 18px;
+    color: var(--m-accent);
+  }
+
+  /* ── Нижняя панель вкладок ── */
+  body.m-ui .m-tabbar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 280;
+    display: flex;
+    height: calc(var(--m-tabbar-h) + env(safe-area-inset-bottom));
+    padding-bottom: env(safe-area-inset-bottom);
+    background: rgba(255, 255, 255, 0.97);
+    -webkit-backdrop-filter: saturate(180%) blur(12px);
+    backdrop-filter: saturate(180%) blur(12px);
+    border-top: 1px solid var(--m-line);
+  }
+
+  body.m-ui .m-tab {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    color: var(--m-muted);
+    text-decoration: none;
+    font-size: 11px;
+    font-weight: 500;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body.m-ui .m-tab i {
+    font-size: 24px;
+    line-height: 1;
+  }
+
+  body.m-ui .m-tab span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  body.m-ui .m-tab.active {
+    color: var(--m-text);
+    font-weight: 600;
+  }
+
+  body.m-ui .m-tab.active::before {
+    content: "";
+    position: absolute;
+    top: -1px;
+    left: 18%;
+    right: 18%;
+    height: 3px;
+    border-radius: 0 0 3px 3px;
+    background: var(--m-text);
+  }
+
+  /* ── Переключатель «Аэрофлот / Россия» в базе знаний ── */
+  body.m-ui .m-segment {
+    display: flex;
+    padding: 4px;
+    margin: -4px 0 16px;
+    border-radius: 12px;
+    background: var(--m-fill);
+  }
+
+  body.m-ui .m-segment a {
+    flex: 1;
+    padding: 8px 0;
+    border-radius: 9px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--m-muted);
+    text-decoration: none;
+  }
+
+  body.m-ui .m-segment a.active {
+    background: #fff;
+    color: var(--m-text);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  /* ── Общие элементы страниц ── */
+  body.m-ui .card,
+  body.m-ui .widget {
+    max-width: 100%;
+  }
+
+  body.m-ui .content input[type="text"],
+  body.m-ui .content input[type="email"],
+  body.m-ui .content input[type="tel"],
+  body.m-ui .content input[type="date"],
+  body.m-ui .content input[type="password"],
+  body.m-ui .content select,
+  body.m-ui .content textarea {
+    width: 100%;
+    max-width: 100%;
+    min-height: 46px;
+    font-size: 16px; /* меньше 16px — iOS приближает страницу при фокусе */
+    border-radius: 12px;
+  }
+
+  /* Шапка разделов: хлебные крошки и кнопки действий */
+  body.m-ui .afl-header-bar,
+  body.m-ui .akr-header-bar {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    margin: 0 0 14px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  body.m-ui .breadcrumb {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px 6px;
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--m-muted);
+  }
+
+  body.m-ui .afl-action-buttons,
+  body.m-ui .akr-action-buttons {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+  }
+
+  body.m-ui .afl-action-buttons .btn,
+  body.m-ui .afl-action-buttons form,
+  body.m-ui .akr-action-buttons .btn,
+  body.m-ui .akr-action-buttons form {
+    flex: 1;
+  }
+
+  body.m-ui .afl-action-buttons .btn,
+  body.m-ui .akr-action-buttons .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    height: 42px;
+    padding: 0 10px;
+    margin: 0;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  /* Поиск по базе знаний */
+  body.m-ui .search-container {
+    width: 100%;
+    max-width: none;
+    margin: 0 0 16px;
+  }
+
+  body.m-ui .search-input {
+    width: 100%;
+    height: 46px;
+    padding-left: 16px;
+    padding-right: 44px;
+    border: 0;
+    border-radius: 14px;
+    background: var(--m-fill);
+    font-size: 16px;
+  }
+
+  body.m-ui .search-results-grid,
+  body.m-ui .categories-grid,
+  body.m-ui .articles-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0;
+    margin: 0 0 16px;
+  }
+
+  /* Карточки категорий — строки списка */
+  body.m-ui .category-card,
+  body.m-ui .search-result-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    height: auto;
+    min-height: 64px;
+    padding: 14px 16px 14px 18px;
+    border: 0;
+    border-radius: var(--m-radius);
+    /* В БЗ «Россия» свой фирменный цвет (--akr-accent из её стилей) */
+    background: var(--akr-accent, var(--m-accent));
+    color: #fff;
+    font-size: 17px;
+    font-weight: 600;
+    text-align: left;
+    box-shadow: none;
+    transform: none;
+  }
+
+  body.m-ui .search-result-card {
+    background: var(--m-card);
+    border: 1px solid var(--m-line);
+    color: var(--m-text);
+  }
+
+  body.m-ui .category-card::after,
+  body.m-ui .article-card::after,
+  body.m-ui .search-result-card::after {
+    content: "\203A";
+    flex-shrink: 0;
+    font-size: 24px;
+    font-weight: 400;
+    line-height: 1;
+    opacity: 0.6;
+  }
+
+  /* Статьи — строки вместо кругов */
+  body.m-ui .article-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    max-width: none;
+    aspect-ratio: auto;
+    min-height: 58px;
+    padding: 12px 16px;
+    border: 1px solid var(--m-line);
+    border-radius: 14px;
+    background: #fff;
+    color: var(--m-text);
+    font-size: 15px;
+    font-weight: 500;
+    text-align: left;
+    box-shadow: none;
+    transform: none;
+  }
+
+  body.m-ui .article-card::before {
+    content: "";
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: #e6f6fc url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='none' stroke='%2303a0dc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' viewBox='0 0 24 24'%3E%3Cpath d='M14 3v4a1 1 0 0 0 1 1h4'/%3E%3Cpath d='M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z'/%3E%3Cpath d='M9 13h6M9 17h6'/%3E%3C/svg%3E") center no-repeat;
+  }
+
+  body.m-ui .article-card .article-title {
+    flex: 1;
+    min-width: 0;
+  }
+
+  body.m-ui .articles-section {
+    padding: 0;
+  }
+
+  /* ── Главная ── */
+  body.m-ui .dashboard {
+    display: block;
+  }
+
+  body.m-ui .widget {
+    padding: 16px;
+    border: 1px solid var(--m-line);
+    border-radius: 20px;
+    background: var(--m-card);
+    box-shadow: none;
+  }
+
+  body.m-ui .widget__title {
+    margin: 0 0 14px;
+    padding: 0;
+    border: 0;
+    background: none;
+    font-size: 19px;
+    font-weight: 600;
+    text-align: left;
+    color: var(--m-text);
+  }
+
+  body.m-ui .meetings-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  body.m-ui .call-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: none;
+    padding: 26px 20px 20px;
+    border: 0;
+    border-radius: var(--m-radius);
+    background: #ededef;
+    text-decoration: none;
+  }
+
+  body.m-ui .call-card svg {
+    width: 56px;
+    height: 56px;
+    margin-bottom: 18px;
+  }
+
+  body.m-ui .call-card__label {
+    width: 100%;
+    margin: 0 0 10px;
+    padding: 11px 0;
+    border: 1.5px solid var(--m-text);
+    border-radius: 12px;
+    background: #fff;
+    color: var(--m-text);
+    font-size: 17px;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  body.m-ui .call-card__sub {
+    margin: 0;
+    font-size: 15px;
+    color: #3a3a3c;
+  }
+
+  /* ── Статья ── */
+  body.m-ui .article-container,
+  body.m-ui .article-main-content {
+    display: block;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  body.m-ui .article-content {
+    padding: 18px 16px;
+    border: 1px solid var(--m-line);
+    border-radius: var(--m-radius);
+    background: #fff;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  body.m-ui .article-content h1 { font-size: 24px; }
+  body.m-ui .article-content h2 { font-size: 20px; }
+  body.m-ui .article-content h3 { font-size: 18px; }
+
+  body.m-ui .article-content pre,
+  body.m-ui .article-content table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  body.m-ui .article-content img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  body.m-ui .attachments-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* ── Статистика ── */
+  body.m-ui .header-button {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  body.m-ui .header-button .action-block {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  body.m-ui .header-button .action-button {
+    flex: 1;
+    height: 42px;
+    margin: 0;
+    border-radius: 12px;
+    font-size: 14px;
+    white-space: nowrap;
+  }
+
+  body.m-ui .cards-container,
+  body.m-ui .cards-row {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 0;
+    margin: 0;
+  }
+
+  body.m-ui .cards-statistic,
+  body.m-ui .cards-statistic-full {
+    width: 100%;
+    max-width: none;
+    flex: none;
+  }
+
+  body.m-ui .cards-container .card {
+    width: 100%;
+    padding: 16px;
+    margin: 0;
+    border: 1px solid var(--m-line);
+    border-radius: var(--m-radius);
+    background: #fff;
+    box-shadow: none;
+  }
+
+  body.m-ui .cards-container .card-title {
+    font-size: 16px;
+    line-height: 1.3;
+  }
+
+  body.m-ui .chart-box,
+  body.m-ui .chart-box.line {
+    height: 240px;
+    min-height: 0;
+  }
+
+  /* ── График дежурств ── */
+  body.m-ui .schedule-outer,
+  body.m-ui .daily-container {
+    width: 100%;
+    max-width: none;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  body.m-ui .schedule-topbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  body.m-ui .period-selector {
+    flex: 1 1 100%;
+    justify-content: space-between;
+    padding: 6px;
+    border-radius: 14px;
+    background: var(--m-fill);
+  }
+
+  body.m-ui .period-selector span {
+    font-size: 17px;
+    font-weight: 700;
+  }
+
+  body.m-ui .schedule-subtitle {
+    margin: 0 0 10px;
+    font-size: 15px;
+    font-weight: 600;
+    text-align: left;
+    color: var(--m-muted);
+  }
+
+  body.m-ui .table-container {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border: 1px solid var(--m-line);
+    border-radius: var(--m-radius);
+    background: #fff;
+  }
+
+  body.m-ui .table-container table {
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  /* ФИО закреплены слева при горизонтальной прокрутке дней */
+  body.m-ui .number-column {
+    display: none;
+  }
+
+  body.m-ui .fio-column {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    min-width: 128px;
+    max-width: 128px;
+    background: #fff;
+    font-size: 13px;
+    box-shadow: 1px 0 0 var(--m-line);
+  }
+
+  body.m-ui .day-header,
+  body.m-ui .day-cell {
+    min-width: 36px;
+    height: 40px;
+    font-size: 12px;
+  }
+
+  body.m-ui .legend-container {
+    margin-top: 12px;
+    padding: 14px 16px;
+    border: 1px solid var(--m-line);
+    border-radius: var(--m-radius);
+    background: var(--m-card);
+  }
+
+  /* ── Проверка знаний ── */
+  body.m-ui .kc-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  body.m-ui .kc-card {
+    width: 100%;
+    min-height: 0;
+    padding: 18px;
+    border-radius: var(--m-radius);
+  }
+
+  body.m-ui .kc-card h3 {
+    font-size: 18px;
+  }
+
+  body.m-ui .kc-test-body {
+    padding: 16px;
+  }
+
+  body.m-ui .kc-option {
+    min-height: 52px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    font-size: 15px;
+  }
+
+  body.m-ui .kc-next-btn,
+  body.m-ui .kc-start-btn,
+  body.m-ui .kc-return-btn {
+    width: 100%;
+    min-height: 48px;
+    border-radius: 12px;
+  }
+
+  /* ── Обезличивание ── */
+  body.m-ui .frame {
+    width: 100%;
+    max-width: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  body.m-ui .frame .panel {
+    padding: 16px;
+    border-radius: var(--m-radius);
+  }
+
+  /* ── Профиль ── */
+  body.m-ui .profile-page {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: none;
+    padding: 0;
+  }
+
+  body.m-ui .profile-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 22px 16px;
+    border-radius: 20px;
+    text-align: center;
+  }
+
+  body.m-ui .profile-photo-wrap,
+  body.m-ui .profile-photo {
+    width: 104px;
+    height: 104px;
+  }
+
+  body.m-ui .profile-header-info {
+    align-items: center;
+  }
+
+  body.m-ui .profile-header-name {
+    font-size: 22px;
+    font-weight: 700;
+  }
+
+  body.m-ui .profile-card {
+    padding: 16px;
+    border-radius: var(--m-radius);
+  }
+
+  body.m-ui .profile-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  body.m-ui .form-group {
+    width: 100%;
+    min-width: 0;
+  }
+
+  body.m-ui .form-actions .btn-save {
+    width: 100%;
+    min-height: 48px;
+    border-radius: 12px;
+  }
+
+  /* ── Форма статьи ── */
+  body.m-ui .form-container,
+  body.m-ui .form-content {
+    width: 100%;
+    max-width: none;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  body.m-ui .markdown-toolbar {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 6px;
+    padding: 8px;
+  }
+
+  body.m-ui .toolbar-btn {
+    flex-shrink: 0;
+    min-height: 36px;
+  }
+
+  body.m-ui .markdown-help {
+    display: none;
+  }
+
+  /* ── Вход ── */
+  body.m-ui.m-login {
+    display: block;
+    min-height: 100vh;
+    background: #fff;
+  }
+
+  body.m-ui.m-login .card {
+    width: 100%;
+    height: auto;
+    min-height: 100vh;
+    margin: 0;
+    padding: 56px 24px 32px;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    box-sizing: border-box;
+  }
+
+  body.m-ui.m-login .card__logo {
+    margin: 0 0 40px;
+  }
+
+  body.m-ui.m-login .card__logo-img {
+    width: 220px;
+    max-width: 70%;
+  }
+
+  body.m-ui.m-login .card__auth {
+    width: 100%;
+    padding: 0;
+  }
+
+  body.m-ui.m-login .card__auth::before {
+    content: "Вход";
+    display: block;
+    margin: 0 0 24px;
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--m-text);
+  }
+
+  body.m-ui.m-login .input-group__label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--m-text);
+  }
+
+  body.m-ui.m-login .input-group__field {
+    width: 100%;
+    height: 50px;
+    padding: 0 14px;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    background: var(--m-fill);
+    font-size: 16px;
+    box-sizing: border-box;
+  }
+
+  body.m-ui.m-login .input-group__field:focus {
+    border-color: var(--m-accent);
+    background: #fff;
+  }
+
+  body.m-ui.m-login .btn--primary {
+    width: 100%;
+    height: 52px;
+    margin-top: 24px;
+    border-radius: 14px;
+    font-size: 17px;
+    font-weight: 600;
+  }
+
+  /* ── Точечные правки ── */
+  body.m-ui.m-login,
+  body.m-ui.m-login * {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  body.m-ui .dashboard {
+    padding: 0;
+  }
+
+  body.m-ui .content-section {
+    padding: 0;
+  }
+
+  body.m-ui .article-content > :first-child {
+    margin-top: 0;
+  }
+
+  body.m-ui .footer-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    max-width: 100%;
+  }
+
+  body.m-ui .footer-meta .meta-item {
+    min-width: 0;
+  }
+
+  /* Статистика: одна рамка у блока, без карточки внутри карточки */
+  body.m-ui .cards-statistic,
+  body.m-ui .cards-statistic-full {
+    padding: 16px;
+    border: 1px solid var(--m-line);
+    border-radius: var(--m-radius);
+  }
+
+  body.m-ui .cards-container .card {
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+  }
+
+  body.m-ui .header-button {
+    margin: 0 0 14px;
+  }
+
+  body.m-ui .header-button .period-wrapper {
+    flex: 1;
+  }
+
+  body.m-ui .header-button .period-wrapper .action-button {
+    width: 100%;
+  }
+
+  body.m-ui .header-button .action-block {
+    width: 100%;
+  }
+
+  /* График: дни нормальной ширины, таблица прокручивается вбок */
+  body.m-ui .table-container table {
+    width: max-content;
+    min-width: 100%;
+    table-layout: auto;
+  }
+
+  /* Проверка знаний: у карточек были внешние отступы 20px */
+  body.m-ui .kc-card {
+    margin: 0;
+  }
+
+  /* Выдвижное меню «Все разделы» поверх верхней панели */
+  body.m-ui .sidebar {
+    z-index: 320;
+  }
+
+  body.m-ui .sidebar-overlay {
+    z-index: 310;
+  }
+}

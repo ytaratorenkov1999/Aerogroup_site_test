@@ -8,8 +8,9 @@
     <link rel="icon" type="image/png" href="{% static 'support/images/logo_icon.png' %}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
     <link rel="stylesheet" href="{% static 'support/css/base.css' %}?v=5">
+    <link rel="stylesheet" href="{% static 'support/css/mobile.css' %}?v=1">
 </head>
-<body>
+<body class="m-ui">
 <div class="main">
     <button class="menu-toggle" id="menuToggle" aria-label="Открыть меню">
         <i class="ti ti-menu-2"></i>
@@ -38,6 +39,18 @@
         </div>
     </div>
     <div class="main-container">
+
+        <!-- Мобильная верхняя панель (видна только на телефонах, см. mobile.css) -->
+        <header class="m-topbar">
+            <a href="{% url 'home' %}" class="m-topbar__logo">
+                <img src="{% static 'support/images/logo.jpg' %}" alt="Aerogroup">
+            </a>
+            {% if mobile_search_url %}
+            <a href="{{ mobile_search_url }}" class="m-topbar__search" aria-label="Поиск по базе знаний">
+                <i class="ti ti-search"></i><span>Поиск</span>
+            </a>
+            {% endif %}
+        </header>
 
         <div class="login-profile">
 
@@ -75,6 +88,9 @@
                         <span class="profile-dropdown-name">{{ user_name|default:"Пользователь" }}</span>
                         <span class="profile-dropdown-role">{{ user_role|default:"" }}</span>
                     </div>
+                    <button type="button" class="m-all-sections" id="mAllSections">
+                        <i class="ti ti-layout-grid"></i> Все разделы
+                    </button>
                     {% for i in user_menu %}
                         <a href="{% url i.url_name %}">
                             <img class="dropdown-icon" src="{% static i.icons %}" alt="profile">
@@ -89,11 +105,29 @@
             <h1>{{ title }}</h1>
         </div>
 
+        {% if request.path == '/bdaeroflot/' or request.path == '/bdrussia/' %}
+        <!-- Переключатель баз знаний (только мобильная версия) -->
+        <div class="m-segment">
+            <a href="{% url 'aeroflot:index' %}" class="{% if request.path == '/bdaeroflot/' %}active{% endif %}">Аэрофлот</a>
+            <a href="{% url 'russia:index' %}" class="{% if request.path == '/bdrussia/' %}active{% endif %}">Россия</a>
+        </div>
+        {% endif %}
+
         <div class="content">
             {% block content %}{% endblock %}
         </div>
     </div>
 </div>
+
+<!-- Мобильная нижняя панель вкладок -->
+<nav class="m-tabbar" aria-label="Основные разделы">
+    {% for t in mobile_tabs %}
+    <a href="{% url t.url_name %}" class="m-tab" data-match="{{ t.match }}">
+        <i class="ti {{ t.icon }}"></i>
+        <span>{{ t.title }}</span>
+    </a>
+    {% endfor %}
+</nav>
 
 <script>
 const profileBtn     = document.getElementById('profileBtn');
@@ -177,6 +211,33 @@ if (sidebarCollapseBtn) {
     if (best) best.classList.add('active');
 })();
 
+// ── Мобильная версия: активная вкладка, «Все разделы», фокус поиска ──
+(function() {
+    const path = window.location.pathname;
+    let best = null, bestLen = -1;
+    document.querySelectorAll('.m-tab').forEach(tab => {
+        tab.dataset.match.split(' ').forEach(prefix => {
+            const match = prefix === '/' ? path === '/' : path.startsWith(prefix);
+            if (match && prefix.length > bestLen) { best = tab; bestLen = prefix.length; }
+        });
+    });
+    if (best) best.classList.add('active');
+
+    const allSections = document.getElementById('mAllSections');
+    if (allSections && menuToggle) {
+        allSections.addEventListener('click', function(e) {
+            e.stopPropagation();
+            profileDropdown.classList.remove('open');
+            menuToggle.click();
+        });
+    }
+
+    if (new URLSearchParams(window.location.search).get('focus') === 'search') {
+        const input = document.getElementById('searchInput');
+        if (input) input.focus();
+    }
+})();
+
 // ── Профиль ──
 profileBtn.addEventListener('click', function(e) {
     e.stopPropagation();
@@ -204,6 +265,13 @@ document.addEventListener('click', function() {
 });
 
 // ── Загрузка уведомлений ──
+// Экранирование данных с сервера перед вставкой в innerHTML (защита от XSS)
+function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, ch => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    })[ch]);
+}
+
 function getCsrf() {
     return document.cookie.split(';')
         .map(c => c.trim())
@@ -255,17 +323,17 @@ function renderNotifications(notifications, unreadCount) {
     }
 
     notifList.innerHTML = notifications.map(n => `
-        <div class="notif-item ${n.is_read ? 'read' : 'unread'}" data-id="${n.id}" data-read="${n.is_read}" data-url="${n.article_url}" data-source="${n._source || 'aeroflot'}">
+        <div class="notif-item ${n.is_read ? 'read' : 'unread'}" data-id="${escapeHtml(n.id)}" data-read="${n.is_read}" data-url="${escapeHtml(n.article_url)}" data-source="${escapeHtml(n._source || 'aeroflot')}">
             <div class="notif-unread-dot ${n.is_read ? 'invisible' : ''}"></div>
             <div class="notif-body">
                 <p class="notif-text">
-                    ${n.text}
-                    <a class="notif-article-link" href="${n.article_url}" onclick="event.stopPropagation()">«${n.article_title}»</a>
+                    ${escapeHtml(n.text)}
+                    <a class="notif-article-link" href="${escapeHtml(n.article_url)}" onclick="event.stopPropagation()">«${escapeHtml(n.article_title)}»</a>
                 </p>
-                <span class="notif-time">${n.created_at}</span>
+                <span class="notif-time">${escapeHtml(n.created_at)}</span>
             </div>
             <div class="notif-actions">
-                <button class="notif-action-btn notif-delete-btn" data-id="${n.id}" data-source="${n._source || 'aeroflot'}" title="Удалить">
+                <button class="notif-action-btn notif-delete-btn" data-id="${escapeHtml(n.id)}" data-source="${escapeHtml(n._source || 'aeroflot')}" title="Удалить">
                     <i class="ti ti-trash"></i>
                 </button>
             </div>

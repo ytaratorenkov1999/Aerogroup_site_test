@@ -9,10 +9,14 @@
 #
 # Положить в: support/tests.py  (заменить пустой файл)
 
-from django.test import TestCase, Client
+import os
+import tempfile
+
+from django.test import TestCase, Client, override_settings
 from django.urls import reverse
 from django.contrib.auth.models import User
 
+from aeroflot.models import BdAeroflotCategory
 from support.models import Department, Role, EmployeeProfile
 from support.roles import (
     get_user_role, has_role, can_edit, can_delete, can_edit_schedule,
@@ -367,3 +371,162 @@ class EmployeeProfileModelTests(TestCase):
         dept = make_department('Бухгалтерия')
         user = make_user('deptuser', ROLE_READER, department_name='Бухгалтерия')
         self.assertEqual(user.profile.department, dept)
+
+# ════════════════════════════════════════════════════════════════════════════
+# 7. Админка: раздел «Сотрудники и регистрация пользователей»
+# ════════════════════════════════════════════════════════════════════════════
+
+class EmployeeAdminTests(LoginMixin, TestCase):
+
+    def setUp(self):
+        self.login(make_user('su_emp', is_superuser=True))
+
+    def _profile_formset(self, **fields):
+        data = {
+            'profile-TOTAL_FORMS': '1', 'profile-INITIAL_FORMS': '0',
+            'profile-MIN_NUM_FORMS': '1', 'profile-MAX_NUM_FORMS': '1',
+        }
+        data.update({f'profile-0-{k}': v for k, v in fields.items()})
+        return data
+
+    def test_index_shows_employees_section_only(self):
+        content = self.client.get('/admin/').content.decode()
+        self.assertIn('Сотрудники и регистрация пользователей', content)
+        self.assertIn(reverse('admin:support_employee_changelist'), content)
+        self.assertNotIn('/admin/auth/', content)
+        self.assertNotIn('/admin/daily_schedule/', content)
+
+    def test_create_user_with_profile_role_and_department_in_one_step(self):
+        role = make_role(ROLE_EDITOR)
+        dept = make_department('Отдел технической поддержки')
+        data = {
+            'username': 'new_employee',
+            'usable_password': 'true',
+            'password1': 'Str0ng-pass-123', 'password2': 'Str0ng-pass-123',
+        }
+        data.update(self._profile_formset(
+            full_name='Иванов Иван', email='ivanov@example.com',
+            role=role.id, department=dept.id, position='Инженер',
+        ))
+        response = self.client.post(reverse('admin:support_employee_add'), data)
+        self.assertEqual(response.status_code, 302)
+        user = User.objects.get(username='new_employee')
+        self.assertTrue(user.check_password('Str0ng-pass-123'))
+        self.assertEqual(user.profile.full_name, 'Иванов Иван')
+        self.assertEqual(user.profile.role, role)
+        self.assertEqual(user.profile.department, dept)
+
+    def test_profile_is_required(self):
+        data = {
+            'username': 'no_profile',
+            'usable_password': 'true',
+            'password1': 'Str0ng-pass-123', 'password2': 'Str0ng-pass-123',
+        }
+        data.update(self._profile_formset())
+        response = self.client.post(reverse('admin:support_employee_add'), data)
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(User.objects.filter(username='no_profile').exists())
+
+    def test_changelist_and_change_page_open(self):
+        user = make_user('emp_view', ROLE_READER)
+        self.assertEqual(
+            self.client.get(reverse('admin:support_employee_changelist')).status_code, 200
+        )
+        self.assertEqual(
+            self.client.get(reverse('admin:support_employee_change', args=[user.id])).status_code, 200
+        )
+
+
+class AdminLocaleTests(LoginMixin, TestCase):
+    """Админка (django-unfold) на русском, остальной сайт — без изменений."""
+
+    def test_admin_login_page_in_russian(self):
+        content = self.client.get('/admin/login/').content.decode()
+        self.assertIn('Добро пожаловать в', content)
+        self.assertIn('Войти', content)
+
+    def test_language_not_leaking_after_admin_request(self):
+        from django.conf import settings
+        from django.utils import translation
+        self.client.get('/admin/login/')
+        self.assertEqual(translation.get_language(), settings.LANGUAGE_CODE)
+
+    def test_admin_login_without_next_redirects_to_admin_index(self):
+        make_user('su_login', is_superuser=True, password='testpass123')
+        response = self.client.post('/admin/login/', {'username': 'su_login', 'password': 'testpass123'})
+        self.assertRedirects(response, reverse('admin:index'), fetch_redirect_response=False)
+
+
+class RoleAccessLevelTests(TestCase):
+    """Права зависят от уровня доступа (Role.code), а не от названия роли."""
+
+    def test_renamed_role_keeps_permissions(self):
+        user = make_user('renamed', ROLE_EDITOR)
+        role = user.profile.role
+        role.name = 'Контент-менеджер'
+        role.save()
+        user.refresh_from_db()
+        self.assertEqual(get_user_role(user), ROLE_EDITOR)
+        self.assertTrue(can_edit(user))
+
+    def test_role_without_access_level_has_no_rights(self):
+        role = Role.objects.create(name='Администратор')  # название без уровня доступа
+        user = make_user('nocode')
+        user.profile.role = role
+        user.profile.save()
+        self.assertIsNone(get_user_role(user))
+        self.assertFalse(can_edit(user))
+
+    def test_role_required_view_uses_access_level(self):
+        user = make_user('renamed_mgr', ROLE_MANAGER)
+        user.profile.role.name = 'Начальник смены'
+        user.profile.role.save()
+        self.client.force_login(user)
+        cat = BdAeroflotCategory.objects.create(name='К')
+        response = self.client.post(reverse('aeroflot:category_delete', args=[cat.id]))
+        self.assertEqual(response.status_code, 302)
+
+
+@override_settings(MEDIA_X_ACCEL=True)
+class ProtectedMediaTests(LoginMixin, TestCase):
+    """/media/ — только для вошедших; файл отдаёт nginx через X-Accel-Redirect."""
+
+    def setUp(self):
+        self._media = tempfile.TemporaryDirectory()
+        self._override = override_settings(MEDIA_ROOT=self._media.name)
+        self._override.enable()
+        os.makedirs(os.path.join(self._media.name, 'docs'))
+        with open(os.path.join(self._media.name, 'docs', 'файл 1.pdf'), 'wb') as f:
+            f.write(b'%PDF-1.4 test')
+
+    def tearDown(self):
+        self._override.disable()
+        self._media.cleanup()
+
+    def test_anonymous_redirected_to_login(self):
+        response = self.client.get('/media/docs/файл 1.pdf')
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse('login'), response['Location'])
+
+    def test_logged_in_gets_x_accel_redirect(self):
+        self.login(make_user('media_user', ROLE_READER))
+        response = self.client.get('/media/docs/файл 1.pdf')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'application/pdf')
+        self.assertEqual(response['X-Accel-Redirect'], '/protected-media/docs/%D1%84%D0%B0%D0%B9%D0%BB%201.pdf')
+
+    def test_missing_file_404(self):
+        self.login(make_user('media_user2', ROLE_READER))
+        self.assertEqual(self.client.get('/media/docs/nope.pdf').status_code, 404)
+
+    def test_path_traversal_404(self):
+        self.login(make_user('media_user3', ROLE_READER))
+        self.assertEqual(self.client.get('/media/../manage.py').status_code, 404)
+        self.assertEqual(self.client.get('/media/%2e%2e/manage.py').status_code, 404)
+
+    @override_settings(MEDIA_X_ACCEL=False)
+    def test_without_nginx_django_serves_file(self):
+        self.login(make_user('media_user4', ROLE_READER))
+        response = self.client.get('/media/docs/файл 1.pdf')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(b''.join(response.streaming_content), b'%PDF-1.4 test')

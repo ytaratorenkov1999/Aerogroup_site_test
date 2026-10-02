@@ -1,9 +1,10 @@
 from django.contrib import admin
+from unfold.admin import ModelAdmin, TabularInline
 from django.utils.html import format_html, mark_safe
 from django.db.models import Count
 from .models import (
     BdAeroflotCategory, BdAeroflotArticle, BdAeroflotAttachment,
-    ArticleNotification, ArticleAcknowledgement,
+    ArticleAcknowledgement,
 )
 
 
@@ -11,7 +12,7 @@ from .models import (
 #  Вложения (inline)
 # ══════════════════════════════════════════════════════════════
 
-class BdAeroflotAttachmentInline(admin.TabularInline):
+class BdAeroflotAttachmentInline(TabularInline):
     model           = BdAeroflotAttachment
     extra           = 0
     readonly_fields = ('uploaded_at', 'file_preview')
@@ -35,7 +36,7 @@ class BdAeroflotAttachmentInline(admin.TabularInline):
 #  Ознакомления (inline)
 # ══════════════════════════════════════════════════════════════
 
-class ArticleAcknowledgementInline(admin.TabularInline):
+class ArticleAcknowledgementInline(TabularInline):
     model           = ArticleAcknowledgement
     extra           = 0
     readonly_fields = ('user', 'acknowledged_at')
@@ -52,7 +53,7 @@ class ArticleAcknowledgementInline(admin.TabularInline):
 # ══════════════════════════════════════════════════════════════
 
 @admin.register(BdAeroflotCategory)
-class BdAeroflotCategoryAdmin(admin.ModelAdmin):
+class BdAeroflotCategoryAdmin(ModelAdmin):
     list_display   = ('name', 'parent_name', 'articles_count', 'creator', 'created_at')
     list_filter    = ('parent',)
     search_fields  = ('name', 'description')
@@ -89,7 +90,7 @@ class BdAeroflotCategoryAdmin(admin.ModelAdmin):
 # ══════════════════════════════════════════════════════════════
 
 @admin.register(BdAeroflotArticle)
-class BdAeroflotArticleAdmin(admin.ModelAdmin):
+class BdAeroflotArticleAdmin(ModelAdmin):
     list_display   = (
         'title', 'category_path', 'creator', 'last_editor',
         'views_badge', 'ack_count', 'created_at',
@@ -142,13 +143,15 @@ class BdAeroflotArticleAdmin(admin.ModelAdmin):
 # ══════════════════════════════════════════════════════════════
 
 @admin.register(BdAeroflotAttachment)
-class BdAeroflotAttachmentAdmin(admin.ModelAdmin):
+class BdAeroflotAttachmentAdmin(ModelAdmin):
     list_display   = ('file_name', 'article_link', 'file_preview', 'uploaded_at')
     search_fields  = ('file_name', 'article__title')
     readonly_fields = ('uploaded_at',)
     ordering       = ('-uploaded_at',)
 
     def article_link(self, obj):
+        if obj.article is None:
+            return '—'
         return format_html(
             '<a href="/bdaeroflot/article/{}/">{}</a>',
             obj.article.slug, obj.article.title
@@ -170,54 +173,11 @@ class BdAeroflotAttachmentAdmin(admin.ModelAdmin):
 
 
 # ══════════════════════════════════════════════════════════════
-#  Уведомления
-# ══════════════════════════════════════════════════════════════
-
-@admin.register(ArticleNotification)
-class ArticleNotificationAdmin(admin.ModelAdmin):
-    list_display   = ('recipient', 'actor', 'action_badge', 'article_title', 'is_read_badge', 'created_at')
-    list_filter    = ('action', 'is_read', 'created_at')
-    search_fields  = ('recipient__username', 'actor__username', 'article__title')
-    readonly_fields = ('recipient', 'actor', 'article', 'action', 'created_at')
-    ordering       = ('-created_at',)
-
-    def article_title(self, obj):
-        return obj.article.title
-    article_title.short_description = 'Статья'
-
-    def action_badge(self, obj):
-        if obj.action == 'created':
-            return mark_safe(
-                '<span style="background:#eaf3de;color:#3b6d11;padding:2px 9px;'
-                'border-radius:10px;font-size:12px">Создана</span>'
-            )
-        return mark_safe(
-            '<span style="background:#faeeda;color:#ba7517;padding:2px 9px;'
-            'border-radius:10px;font-size:12px">Изменена</span>'
-        )
-    action_badge.short_description = 'Действие'
-
-    def is_read_badge(self, obj):
-        if obj.is_read:
-            return mark_safe(
-                '<span style="color:#27ae60;font-weight:600">✓ Прочитано</span>'
-            )
-        return mark_safe(
-            '<span style="color:#e24b4a;font-weight:600">● Новое</span>'
-        )
-    is_read_badge.short_description = 'Статус'
-    is_read_badge.admin_order_field = 'is_read'
-
-    def has_add_permission(self, request):
-        return False
-
-
-# ══════════════════════════════════════════════════════════════
 #  Ознакомления
 # ══════════════════════════════════════════════════════════════
 
 @admin.register(ArticleAcknowledgement)
-class ArticleAcknowledgementAdmin(admin.ModelAdmin):
+class ArticleAcknowledgementAdmin(ModelAdmin):
     list_display   = ('user', 'article_title', 'acknowledged_at')
     search_fields  = ('user__username', 'article__title')
     readonly_fields = ('user', 'article', 'acknowledged_at')

@@ -1,13 +1,14 @@
 from django.contrib import admin
+from unfold.admin import ModelAdmin, TabularInline
 from django.utils.html import format_html, mark_safe
 from django.db.models import Count
 from .models import (
     BdRussiaCategory, BdRussiaArticle, BdRussiaAttachment,
-    RussiaArticleNotification, RussiaArticleAcknowledgement,
+    RussiaArticleAcknowledgement,
 )
 
 
-class BdRussiaAttachmentInline(admin.TabularInline):
+class BdRussiaAttachmentInline(TabularInline):
     model           = BdRussiaAttachment
     extra           = 0
     readonly_fields = ('uploaded_at', 'file_preview')
@@ -25,7 +26,7 @@ class BdRussiaAttachmentInline(admin.TabularInline):
     file_preview.short_description = 'Предпросмотр'
 
 
-class RussiaArticleAcknowledgementInline(admin.TabularInline):
+class RussiaArticleAcknowledgementInline(TabularInline):
     model               = RussiaArticleAcknowledgement
     extra               = 0
     readonly_fields     = ('user', 'acknowledged_at')
@@ -38,7 +39,7 @@ class RussiaArticleAcknowledgementInline(admin.TabularInline):
 
 
 @admin.register(BdRussiaCategory)
-class BdRussiaCategoryAdmin(admin.ModelAdmin):
+class BdRussiaCategoryAdmin(ModelAdmin):
     list_display  = ('name', 'parent_name', 'articles_count', 'creator', 'created_at')
     list_filter   = ('parent',)
     search_fields = ('name', 'description')
@@ -73,7 +74,7 @@ class BdRussiaCategoryAdmin(admin.ModelAdmin):
 
 
 @admin.register(BdRussiaArticle)
-class BdRussiaArticleAdmin(admin.ModelAdmin):
+class BdRussiaArticleAdmin(ModelAdmin):
     list_display  = (
         'title', 'category_path', 'creator', 'last_editor',
         'views_badge', 'ack_count', 'created_at',
@@ -122,13 +123,15 @@ class BdRussiaArticleAdmin(admin.ModelAdmin):
 
 
 @admin.register(BdRussiaAttachment)
-class BdRussiaAttachmentAdmin(admin.ModelAdmin):
+class BdRussiaAttachmentAdmin(ModelAdmin):
     list_display  = ('file_name', 'article_link', 'file_preview', 'uploaded_at')
     search_fields = ('file_name', 'article__title')
     readonly_fields = ('uploaded_at',)
     ordering      = ('-uploaded_at',)
 
     def article_link(self, obj):
+        if obj.article is None:
+            return '—'
         return format_html(
             '<a href="/bdrussia/article/{}/">{}</a>',
             obj.article.slug, obj.article.title
@@ -149,43 +152,8 @@ class BdRussiaAttachmentAdmin(admin.ModelAdmin):
     file_preview.short_description = 'Файл'
 
 
-@admin.register(RussiaArticleNotification)
-class RussiaArticleNotificationAdmin(admin.ModelAdmin):
-    list_display  = ('recipient', 'actor', 'action_badge', 'article_title', 'is_read_badge', 'created_at')
-    list_filter   = ('action', 'is_read', 'created_at')
-    search_fields = ('recipient__username', 'actor__username', 'article__title')
-    readonly_fields = ('recipient', 'actor', 'article', 'action', 'created_at')
-    ordering      = ('-created_at',)
-
-    def article_title(self, obj):
-        return obj.article.title
-    article_title.short_description = 'Статья'
-
-    def action_badge(self, obj):
-        if obj.action == 'created':
-            return mark_safe(
-                '<span style="background:#eaf3de;color:#3b6d11;padding:2px 9px;'
-                'border-radius:10px;font-size:12px">Создана</span>'
-            )
-        return mark_safe(
-            '<span style="background:#faeeda;color:#ba7517;padding:2px 9px;'
-            'border-radius:10px;font-size:12px">Изменена</span>'
-        )
-    action_badge.short_description = 'Действие'
-
-    def is_read_badge(self, obj):
-        if obj.is_read:
-            return mark_safe('<span style="color:#27ae60;font-weight:600">✓ Прочитано</span>')
-        return mark_safe('<span style="color:#e24b4a;font-weight:600">● Новое</span>')
-    is_read_badge.short_description = 'Статус'
-    is_read_badge.admin_order_field = 'is_read'
-
-    def has_add_permission(self, request):
-        return False
-
-
 @admin.register(RussiaArticleAcknowledgement)
-class RussiaArticleAcknowledgementAdmin(admin.ModelAdmin):
+class RussiaArticleAcknowledgementAdmin(ModelAdmin):
     list_display  = ('user', 'article_title', 'acknowledged_at')
     search_fields = ('user__username', 'article__title')
     readonly_fields = ('user', 'article', 'acknowledged_at')

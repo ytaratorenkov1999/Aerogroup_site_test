@@ -3,6 +3,7 @@ bleach==6.3.0
 certifi==2026.5.20
 charset-normalizer==3.4.7
 Django==6.0.5
+django-unfold==0.108.0
 et_xmlfile==2.0.0
 gunicorn==22.0.0
 idna==3.16

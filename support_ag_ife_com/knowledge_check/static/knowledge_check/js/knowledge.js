@@ -261,7 +261,8 @@ class KnowledgeCheck {
             link.href      = a.url;
             link.download  = a.name;
             link.className = 'kc-attach-card';
-            link.innerHTML = `${SVG_ICONS[a.type] || SVG_ICONS.other}<span>${a.name}</span>`;
+            link.innerHTML = `${SVG_ICONS[a.type] || SVG_ICONS.other}<span></span>`;
+            link.querySelector('span').textContent = a.name;
             this.elAttach.appendChild(link);
         });
     }

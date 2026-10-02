@@ -7,7 +7,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 
 from support.models import EmployeeProfile, Department
-from support.roles import role_required
+from support.roles import role_required, ROLE_ADMIN, ROLE_MANAGER
 from .models import DailyTable
 from .export_to_excel_daily import import_schedule_from_xlsx
 
@@ -58,7 +58,7 @@ def get_data(request):
 
 @login_required(login_url='login')
 @require_POST
-@role_required('Администратор', 'Руководитель')
+@role_required(ROLE_ADMIN, ROLE_MANAGER)
 def save_entry(request):
     try:
         data        = json.loads(request.body)
@@ -107,7 +107,7 @@ def save_entry(request):
 
 @login_required(login_url='login')
 @require_POST
-@role_required('Администратор', 'Руководитель')
+@role_required(ROLE_ADMIN, ROLE_MANAGER)
 def import_schedule(request):
     uploaded = request.FILES.get('file')
     if not uploaded:

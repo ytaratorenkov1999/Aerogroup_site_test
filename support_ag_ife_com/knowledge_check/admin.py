@@ -1,4 +1,5 @@
 from django.contrib import admin
+from unfold.admin import ModelAdmin, TabularInline
 from django.utils.html import format_html
 from .models import (
     TestCategory, NotifyRecipientCC,
@@ -11,7 +12,7 @@ from .models import (
 #  1. КАТЕГОРИИ
 # ══════════════════════════════════════════════════════════════
 
-class NotifyRecipientCCInline(admin.TabularInline):
+class NotifyRecipientCCInline(TabularInline):
     model   = NotifyRecipientCC
     extra   = 1
     fields  = ('email', 'name')
@@ -20,7 +21,7 @@ class NotifyRecipientCCInline(admin.TabularInline):
 
 
 @admin.register(TestCategory)
-class TestCategoryAdmin(admin.ModelAdmin):
+class TestCategoryAdmin(ModelAdmin):
     list_display  = ('name', 'is_active', 'question_count_display', 'order', 'notify_email_main')
     list_filter   = ('is_active',)
     list_editable = ('is_active', 'order')
@@ -46,7 +47,7 @@ class TestCategoryAdmin(admin.ModelAdmin):
 #  2. ВОПРОСЫ
 # ══════════════════════════════════════════════════════════════
 
-class AnswerOptionInline(admin.TabularInline):
+class AnswerOptionInline(TabularInline):
     model    = AnswerOption
     extra    = 3
     fields   = ('text', 'is_correct', 'order')
@@ -55,7 +56,7 @@ class AnswerOptionInline(admin.TabularInline):
     verbose_name_plural = 'Варианты ответов'
 
 
-class QuestionAttachmentInline(admin.TabularInline):
+class QuestionAttachmentInline(TabularInline):
     model   = QuestionAttachment
     extra   = 1
     fields  = ('file', 'caption', 'order', 'preview')
@@ -80,7 +81,7 @@ class QuestionAttachmentInline(admin.TabularInline):
 
 
 @admin.register(Question)
-class QuestionAdmin(admin.ModelAdmin):
+class QuestionAdmin(ModelAdmin):
     list_display  = ('short_text', 'category', 'question_type', 'multiple', 'attachment_count')
     list_filter   = ('question_type', 'multiple', 'category')
     search_fields = ('text',)
@@ -114,7 +115,7 @@ class QuestionAdmin(admin.ModelAdmin):
 #  3. РЕЗУЛЬТАТЫ
 # ══════════════════════════════════════════════════════════════
 
-class UserAnswerInline(admin.TabularInline):
+class UserAnswerInline(TabularInline):
     model           = UserAnswer
     extra           = 0
     can_delete      = False
@@ -134,7 +135,7 @@ class UserAnswerInline(admin.TabularInline):
 
 
 @admin.register(UserAttempt)
-class UserAttemptAdmin(admin.ModelAdmin):
+class UserAttemptAdmin(ModelAdmin):
     list_display  = ('employee_name', 'category', 'status_display',
                      'started_at', 'finished_at', 'email_sent', 'retake_allowed')
     list_filter   = ('status', 'email_sent', 'retake_allowed', 'category')
@@ -178,7 +179,7 @@ class RetakeProxy(UserAttempt):
 
 
 @admin.register(RetakeProxy)
-class RetakeAdmin(admin.ModelAdmin):
+class RetakeAdmin(ModelAdmin):
     list_display  = ('employee_name', 'category', 'finished_at', 'retake_allowed')
     list_filter   = ('category', 'retake_allowed')
     search_fields = ('user__username', 'user__profile__full_name')

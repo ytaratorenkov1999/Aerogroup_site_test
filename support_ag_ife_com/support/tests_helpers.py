@@ -7,13 +7,14 @@
 
 from django.contrib.auth.models import User
 from support.models import Department, Role, EmployeeProfile
+from support.roles import ROLE_CHOICES
 
 
 # ─── Фабрики ────────────────────────────────────────────────────────────────
 
-def make_role(name: str) -> Role:
-    """Возвращает (или создаёт) объект роли по имени."""
-    role, _ = Role.objects.get_or_create(name=name)
+def make_role(code: str) -> Role:
+    """Возвращает (или создаёт) роль с уровнем доступа code (ROLE_*)."""
+    role, _ = Role.objects.get_or_create(code=code, defaults={'name': dict(ROLE_CHOICES)[code]})
     return role
 
 

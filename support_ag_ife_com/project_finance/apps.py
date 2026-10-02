@@ -1,0 +1,7 @@
+from django.apps import AppConfig
+
+
+class ProjectFinanceConfig(AppConfig):
+    default_auto_field = 'django.db.models.BigAutoField'
+    name = 'project_finance'
+    verbose_name = 'Финансы проектов'

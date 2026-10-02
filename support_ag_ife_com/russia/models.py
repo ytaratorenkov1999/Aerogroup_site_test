@@ -18,6 +18,8 @@ logger = logging.getLogger(__name__)
 
 # ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
 
+CATEGORY_CYCLE_ERROR = 'Нельзя выбрать родителем саму категорию или её подкатегорию'
+
 def transliterate_to_slug(text):
     try:
         transliterated = translit(text, 'ru', reversed=True)
@@ -165,11 +167,38 @@ class BdRussiaCategory(SlugMixin):
 
     def get_full_path(self):
         parts = []
+        seen = set()
         node = self
-        while node is not None:
+        # seen — защита от зацикленных родителей в старых данных (иначе бесконечный цикл)
+        while node is not None and node.pk not in seen:
+            seen.add(node.pk)
             parts.append(node.name)
             node = node.parent
         return ' → '.join(reversed(parts))
+
+    def get_descendant_ids(self):
+        """id всех подкатегорий на любой глубине (одним запросом, с защитой от циклов)."""
+        children = {}
+        for pk, parent_id in type(self).objects.values_list('id', 'parent_id'):
+            children.setdefault(parent_id, []).append(pk)
+        found, stack = set(), [self.pk]
+        while stack:
+            for child in children.get(stack.pop(), []):
+                if child != self.pk and child not in found:
+                    found.add(child)
+                    stack.append(child)
+        return found
+
+    def is_valid_parent(self, parent_id):
+        """Родителем нельзя сделать саму категорию или её подкатегорию — получится цикл."""
+        if parent_id is None or self.pk is None:
+            return True
+        return parent_id != self.pk and parent_id not in self.get_descendant_ids()
+
+    def clean(self):
+        super().clean()
+        if not self.is_valid_parent(self.parent_id):
+            raise ValidationError({'parent': CATEGORY_CYCLE_ERROR})
 
 
 class BdRussiaArticle(SlugMixin, MarkdownContentMixin):
@@ -215,8 +244,9 @@ class BdRussiaArticle(SlugMixin, MarkdownContentMixin):
 class BdRussiaAttachment(AttachmentMixin):
     """Вложение к статье базы знаний Россия"""
 
+    # null — изображение загружено в редактор новой статьи, которая ещё не сохранена
     article    = models.ForeignKey(
-        BdRussiaArticle, on_delete=models.CASCADE,
+        BdRussiaArticle, on_delete=models.CASCADE, null=True, blank=True,
         related_name='attachments', verbose_name='Статья'
     )
     file       = models.FileField(
@@ -232,6 +262,8 @@ class BdRussiaAttachment(AttachmentMixin):
         verbose_name_plural = 'Вложения БЗ Россия'
 
     def __str__(self):
+        if self.article is None:
+            return f"Вложение без статьи: {self.file_name}"
         return f"Вложение к статье: {self.article.title}"
 
 

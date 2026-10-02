@@ -1,0 +1,237 @@
+{% extends 'base.html' %}
+{% load static finance %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'project_finance/css/finance.css' %}?v=1">
+
+<div class="pf">
+    {% include 'project_finance/_messages.html' %}
+
+    <div class="pf-head">
+        <div>
+            <a class="pf-back" href="{% url 'project_finance:summary' %}"><i class="ti ti-chevron-left"></i> Все проекты</a>
+            {% if project.status != 'active' %}<span class="pf-tag">{{ project.get_status_display|lower }}</span>{% endif %}
+            {% if project.description %}<p class="pf-muted pf-desc">{{ project.description }}</p>{% endif %}
+        </div>
+        <div class="pf-tools">
+            <button type="button" class="pf-btn pf-btn--primary" data-task-new
+                    {% if not price_items %}disabled title="Сначала добавьте позицию в прайс-лист"{% endif %}>
+                <i class="ti ti-plus"></i> Задача
+            </button>
+            <button type="button" class="pf-btn" data-open="dlgProject">Изменить проект</button>
+        </div>
+    </div>
+
+    <div class="pf-proj">
+        <div class="pf-table-wrap">
+            <table class="pf-table pf-tasks">
+                <thead>
+                    <tr>
+                        <th>№</th><th>Дата</th><th>Задача</th><th>Услуга</th><th>Кол-во</th>
+                        <th>Цена</th><th>Сумма</th><th>Время</th><th>Статус</th><th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for task in tasks %}
+                    <tr class="pf-task {% if task.is_free %}is-free{% endif %}">
+                        <td class="c-no pf-num">{{ task.number }}</td>
+                        <td class="pf-num" data-l="Дата">{{ task.date|date:"d.m.Y" }}</td>
+                        <td class="c-main">
+                            <div class="pf-task-title">{{ task.title }}</div>
+                            {% if task.description %}<div class="pf-task-desc">{{ task.description|linebreaksbr }}</div>{% endif %}
+                        </td>
+                        <td class="pf-svc" data-l="Услуга">{{ task.service_label }}</td>
+                        <td class="pf-num" data-l="Кол-во">{{ task.quantity }}</td>
+                        <td class="pf-num" data-l="Цена">{% if task.price is not None %}{{ task.price|rub }}{% else %}<span class="pf-muted">—</span>{% endif %}</td>
+                        <td class="pf-num pf-amt" data-l="Сумма"><b>{{ task.full_amount|rub }}</b></td>
+                        <td data-l="Время">{{ task.time_spent|default:"—" }}</td>
+                        <td data-l="Статус">
+                            {% if task.is_free %}
+                                <span class="pf-pay pf-pay--na">Не в стоимости</span>
+                            {% else %}
+                                <form method="post" action="{% url 'project_finance:task_toggle_paid' task.pk %}" class="pf-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="pf-pay {% if task.is_paid %}pf-pay--yes{% else %}pf-pay--no{% endif %}"
+                                            title="{% if task.is_paid %}Отметить как не оплаченную{% else %}Отметить как оплаченную{% endif %}">
+                                        {% if task.is_paid %}Оплачено{% else %}Не оплачено{% endif %}
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </td>
+                        <td class="c-act">
+                            <span class="pf-row-actions">
+                                <button type="button" class="pf-icon-btn" data-task-edit="{{ task.pk }}" title="Изменить" aria-label="Изменить задачу"><i class="ti ti-pencil"></i></button>
+                                <form method="post" action="{% url 'project_finance:task_delete' task.pk %}" class="pf-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="pf-icon-btn pf-icon-btn--danger" title="Удалить" aria-label="Удалить задачу"
+                                            data-confirm="Удалить задачу №{{ task.number }} «{{ task.title }}»?"><i class="ti ti-trash"></i></button>
+                                </form>
+                            </span>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="10">
+                        <div class="pf-empty"><strong>Задач пока нет</strong>
+                            {% if price_items %}Добавьте первую кнопкой «+ Задача».{% else %}Сначала заполните прайс-лист справа, затем добавьте задачу.{% endif %}
+                        </div>
+                    </td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <aside class="pf-aside">
+            <div class="pf-card">
+                <h3 class="pf-card__title">Итог по проекту</h3>
+                <div class="pf-totals">
+                    <div><span class="pf-muted">Всего</span><span class="pf-big pf-num">{{ sums.total|rub }}</span></div>
+                    <div><span class="pf-muted">Оплачено</span><span class="pf-num pf-paid">{{ sums.paid|rub }}</span></div>
+                    <div><span class="pf-muted">Не оплачено</span><span class="pf-num pf-due">{{ sums.due|rub }}</span></div>
+                </div>
+                <div class="pf-bar" role="img" aria-label="Оплачено {{ paid_pct }}%"><span style="width:{{ paid_pct }}%"></span></div>
+                <div class="pf-hint">Оплачено {{ paid_pct }}% · задач: {{ tasks|length }}</div>
+            </div>
+            <div class="pf-card">
+                <div class="pf-card__row">
+                    <h3 class="pf-card__title">Прайс-лист</h3>
+                    <button type="button" class="pf-btn pf-btn--ghost pf-btn--sm" data-open="dlgPrice">Изменить</button>
+                </div>
+                {% if price_items %}
+                <ul class="pf-price-list">
+                    {% for item in price_items %}
+                    <li><span>{{ item.name }}</span>
+                        <span class="pf-num">{% if item.is_negotiable %}<span class="pf-muted">по договорённости</span>{% else %}{{ item.price|rub }}{% endif %}</span></li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="pf-muted pf-small">Прайс не заполнен. Нажмите «Изменить», чтобы добавить услуги.</p>
+                {% endif %}
+            </div>
+        </aside>
+    </div>
+</div>
+
+{# ── Окно: прайс-лист ── #}
+<dialog class="pf-dialog" id="dlgPrice">
+    <div class="pf-dialog__head">
+        <h2>Прайс-лист: {{ project.name }}</h2>
+        <button type="button" class="pf-icon-btn" data-close aria-label="Закрыть"><i class="ti ti-x"></i></button>
+    </div>
+    {% if price_items %}
+    <ul class="pf-price-list pf-price-list--edit">
+        {% for item in price_items %}
+        <li>
+            <span>{{ item.name }}<br><span class="pf-hint">{% if item.usage %}Используется в задачах: {{ item.usage }}{% else %}Не используется{% endif %}</span></span>
+            <span class="pf-price-actions">
+                <span class="pf-num">{% if item.is_negotiable %}<span class="pf-muted">по догов.</span>{% else %}{{ item.price|rub }}{% endif %}</span>
+                <button type="button" class="pf-icon-btn" data-price-edit="{{ item.pk }}" data-name="{{ item.name }}" title="Изменить"><i class="ti ti-pencil"></i></button>
+                {% if item.usage %}
+                <button type="button" class="pf-icon-btn pf-icon-btn--danger" data-price-replace="{{ item.pk }}" title="Удалить"><i class="ti ti-trash"></i></button>
+                {% else %}
+                <form method="post" action="{% url 'project_finance:price_delete' project.pk item.pk %}" class="pf-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="pf-icon-btn pf-icon-btn--danger" title="Удалить"
+                            data-confirm="Удалить позицию «{{ item.name }}» из прайса?"><i class="ti ti-trash"></i></button>
+                </form>
+                {% endif %}
+            </span>
+        </li>
+        {% if item.usage %}
+        <li class="pf-replace" id="replace-{{ item.pk }}" hidden>
+            <form method="post" action="{% url 'project_finance:price_delete' project.pk item.pk %}" class="pf-replace__form">
+                {% csrf_token %}
+                <p>Позицию «{{ item.name }}» используют задачи ({{ item.usage }}).
+                {% if price_items|length > 1 %}Выберите замену — задачи перейдут на неё, их цены не изменятся.{% else %}Сначала добавьте другую позицию, чтобы перевести на неё задачи.{% endif %}</p>
+                {% if price_items|length > 1 %}
+                <div class="pf-replace__row">
+                    <select name="replace_with">
+                        {% for other in price_items %}{% if other.pk != item.pk %}<option value="{{ other.pk }}">{{ other.name }}</option>{% endif %}{% endfor %}
+                    </select>
+                    <button type="submit" class="pf-btn pf-btn--danger">Заменить и удалить</button>
+                </div>
+                {% endif %}
+            </form>
+        </li>
+        {% endif %}
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="pf-muted">Позиций пока нет. Добавьте первую услугу.</p>
+    {% endif %}
+
+    <form method="post" action="{% url 'project_finance:price_save' project.pk %}" class="pf-form" id="priceForm">
+        {% csrf_token %}
+        <input type="hidden" name="item_id" value="">
+        <div class="pf-label" id="priceFormLabel">Новая позиция</div>
+        <label class="pf-field"><span>Название услуги</span>
+            <input name="name" required maxlength="160" placeholder="Например, Добавить викторину">
+        </label>
+        <div class="pf-row2">
+            <label class="pf-field"><span>Цена, ₽</span>
+                <input name="price" type="number" min="0" step="0.01" inputmode="decimal">
+            </label>
+            <label class="pf-check pf-check--bottom"><input type="checkbox" name="is_negotiable"> По договорённости</label>
+        </div>
+        <p class="pf-hint" id="priceEditHint" hidden>Новая цена применится только к новым задачам. В уже добавленных задачах цена сохранится.</p>
+        <div class="pf-actions">
+            <button type="button" class="pf-btn" id="priceCancelEdit" hidden>Отменить изменение</button>
+            <button type="button" class="pf-btn" data-close>Готово</button>
+            <button type="submit" class="pf-btn pf-btn--primary" id="priceSubmit">Добавить позицию</button>
+        </div>
+    </form>
+</dialog>
+
+{# ── Окно: задача ── #}
+<dialog class="pf-dialog" id="dlgTask">
+    <form method="post" action="{% url 'project_finance:task_save' project.pk %}" class="pf-form" id="taskForm">
+        {% csrf_token %}
+        <input type="hidden" name="task_id" value="">
+        <div class="pf-dialog__head">
+            <h2 id="taskFormTitle">Новая задача</h2>
+            <button type="button" class="pf-icon-btn" data-close aria-label="Закрыть"><i class="ti ti-x"></i></button>
+        </div>
+        <label class="pf-field"><span>Услуга из прайса</span>
+            <select name="price_item">
+                {% for item in price_items %}<option value="{{ item.pk }}">{{ item.name }}</option>{% endfor %}
+                <option value="" data-legacy hidden>Без услуги</option>
+            </select>
+        </label>
+        <label class="pf-field"><span>Название</span>
+            <input name="title" required maxlength="200" placeholder="Например, Слайдер SpaceKraft">
+        </label>
+        <label class="pf-field"><span>Описание</span>
+            <textarea name="description" maxlength="20000"></textarea>
+        </label>
+        <div class="pf-row2">
+            <label class="pf-field"><span>Цена за единицу, ₽</span>
+                <input name="price" type="number" min="0" step="0.01" inputmode="decimal">
+            </label>
+            <label class="pf-field"><span>Количество</span>
+                <input name="quantity" type="number" min="1" step="1" inputmode="numeric" value="1" required>
+            </label>
+        </div>
+        <div class="pf-row2">
+            <label class="pf-field"><span>Затраченное время</span>
+                <input name="time_spent" maxlength="60" placeholder="Например, 3 ч">
+            </label>
+            <label class="pf-field"><span>Дата</span>
+                <input name="date" type="date" required value="{{ today|date:'Y-m-d' }}">
+            </label>
+        </div>
+        <label class="pf-check"><input type="checkbox" name="is_free"> Не включать в стоимость (задача останется в списке с суммой 0 ₽)</label>
+        <label class="pf-check"><input type="checkbox" name="is_paid"> Оплачено</label>
+        <div class="pf-calc"><span>Сумма к оплате</span><b class="pf-num" id="taskSum">0 ₽</b></div>
+        <p class="pf-hint" id="taskHint"></p>
+        <p class="pf-err" id="taskErr" hidden></p>
+        <div class="pf-actions">
+            <button type="button" class="pf-btn" data-close>Отмена</button>
+            <button type="submit" class="pf-btn pf-btn--primary" id="taskSubmit">Добавить задачу</button>
+        </div>
+    </form>
+</dialog>
+
+{% include 'project_finance/_project_dialog.html' %}
+{% include 'project_finance/_confirm_dialog.html' %}
+{{ js_data|json_script:"pfData" }}
+<script src="{% static 'project_finance/js/finance.js' %}?v=1"></script>
+{% endblock %}
