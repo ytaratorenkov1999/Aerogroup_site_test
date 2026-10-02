@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'aeroflot/css/category_form.css' %}">
+<div class="afl-header-bar">
+    <div class="breadcrumb">
+        <a href="{% url 'aeroflot:index' %}">База знаний Аэрофлот</a>
+        {% if category %}
+            {% if category.parent %}
+                → <a href="{% url 'aeroflot:category_detail' category.parent.slug %}">
+                    {{ category.parent.name }}
+                  </a>
+            {% endif %}
+            → {{ category.name }} → Редактирование
+        {% else %}
+            → Создание категории
+        {% endif %}
+    </div>
+</div>
+
+<div class="form-container">
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="form-content">
+            <div class="form-group">
+                <label for="name">Наименование категории <span class="required">*</span></label>
+                <input type="text" id="name" name="name"
+                       value="{{ category.name|default:'' }}"
+                       placeholder="Введите название категории"
+                       required autofocus>
+            </div>
+
+            <div class="form-group">
+                <label for="parent_id">Родительская категория</label>
+                <select id="parent_id" name="parent_id">
+                    <option value="">Без родительской категории</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat.id }}"
+                        {% if category and category.parent_id == cat.id %}selected
+                        {% elif selected_parent_id and selected_parent_id|slugify == cat.id|slugify %}selected
+                        {% endif %}>
+                        {{ cat.get_full_path }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="description">Описание категории</label>
+                <textarea id="description" name="description"
+                          placeholder="Введите описание категории (необязательно)"
+                >{{ category.description|default:'' }}</textarea>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a href="{% url 'aeroflot:index' %}" class="btn">Отменить</a>
+            <button type="submit" class="btn">
+                {% if category %}Сохранить изменения{% else %}Создать категорию{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+document.querySelector('form').addEventListener('submit', function (e) {
+    const name = document.getElementById('name').value.trim();
+    if (!name) {
+        e.preventDefault();
+        alert('Пожалуйста, укажите название категории');
+        document.getElementById('name').focus();
+    }
+});
+</script>
+{% endblock %}

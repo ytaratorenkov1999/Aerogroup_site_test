@@ -1,0 +1,115 @@
+services:
+
+  # База данных
+  db:
+    image: postgres:17
+    container_name: aerogroup_site_db
+    restart: always
+    env_file:
+      - ./support_ag_ife_com/.env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - aerogroup_net
+
+  # Django + Gunicorn
+  web:
+    build: .
+    container_name: aerogroup_site_web
+    restart: always
+    command: sh -c "python manage.py migrate --noinput && python manage.py collectstatic --noinput && gunicorn support_ag_ife_com.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120"
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+      - ./support_ag_ife_com/logs:/app/logs
+    env_file:
+      - ./support_ag_ife_com/.env
+    depends_on:
+      - db
+    extra_hosts:
+      - "helpdesk-su.ag-ife.com:178.176.19.13"
+      - "helpdesk-fv.ag-ife.com:62.64.17.121"
+    networks:
+      - aerogroup_net
+
+  # Nginx
+  nginx:
+    image: nginx:stable-alpine
+    container_name: aerogroup_site_connect
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+      - "3000:3000"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - static_volume:/app/staticfiles:ro
+      - media_volume:/app/media:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - ./certbot_webroot:/var/www/certbot
+    depends_on:
+      - web
+    networks:
+      - aerogroup_net
+  monitoring:
+    image: grafana/grafana
+    container_name: grafana
+    env_file:
+      - ./support_ag_ife_com/.env
+    volumes:
+      - grafana_storage:/var/lib/grafana
+    networks:
+      - aerogroup_net
+    restart: always
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - aerogroup_net
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_storage:/prometheus/
+    restart: always
+
+  node_exporter:
+    image: prom/node-exporter
+    container_name: node_exporter
+    networks:
+      - aerogroup_net
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--path.rootfs=/rootfs'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    restart: always
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    networks:
+      - aerogroup_net
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    restart: always
+
+
+networks:
+  aerogroup_net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:
+  grafana_storage:
+  prometheus_storage:

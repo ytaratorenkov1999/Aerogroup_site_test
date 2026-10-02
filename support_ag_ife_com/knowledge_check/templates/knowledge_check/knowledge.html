@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'knowledge_check/css/knowledge.css' %}?v=2">
+
+<div id="kcCardsView">
+    {% if categories %}
+    <div class="kc-grid">
+        {% for cat in categories %}
+        <div class="kc-card {% if cat.is_blocked %}kc-card--locked{% endif %}"
+             data-id="{{ cat.id }}"
+             data-slug="{{ cat.slug }}"
+             data-name="{{ cat.name }}"
+             data-can="{{ cat.can_start|lower }}"
+             data-in-progress="{% if cat.in_progress %}true{% else %}false{% endif %}">
+
+            <h3>{{ cat.name }}</h3>
+
+            {% if cat.description %}
+            <p>{{ cat.description }}</p>
+            {% else %}
+            <p style="min-height:20px;"></p>
+            {% endif %}
+
+            <div class="kc-card-footer">
+                <span style="color:var(--kc-muted);font-size:13px;">Вопросов</span>
+                <span class="kc-qcount-num">{{ cat.q_count }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align:center;padding:70px;color:var(--kc-muted);">
+        Нет активных категорий тестирования
+    </div>
+    {% endif %}
+</div>
+
+<div id="kcTestView"
+     data-url-start="{% url 'knowledge_check:start_quiz' 'SLUG' %}"
+     data-url-resume="{% url 'knowledge_check:resume_quiz' 'SLUG' %}"
+     data-url-question="{% url 'knowledge_check:get_question' %}"
+     data-url-submit="{% url 'knowledge_check:submit_answer' %}"
+     data-url-complete="{% url 'knowledge_check:complete_quiz' %}">
+    <div class="kc-test-head">
+        <button class="kc-back-btn" id="kcBackBtn">Назад</button>
+        <h3 id="kcTestTitle">—</h3>
+    </div>
+
+    <div class="kc-test-body">
+
+        <!-- Старт -->
+        <div class="kc-screen kc-screen-start" id="scrStart">
+            <button class="kc-start-btn" id="kcStartBtn">
+                Начать тестирование
+            </button>
+        </div>
+
+        <!-- Вопрос -->
+        <div class="kc-screen" id="scrQuestion">
+            <div class="kc-progress-row">
+                <span id="kcProgLabel">Вопрос 1 из 1</span>
+                <span id="kcProgPct">0%</span>
+            </div>
+            <div class="kc-progress-bar">
+                <div class="kc-progress-fill" id="kcProgFill" style="width:0%"></div>
+            </div>
+            <div class="kc-q-text" id="kcQText"></div>
+            <div class="kc-attachments" id="kcAttachments"></div>
+            <div id="kcAnswerArea" style="display:flex;flex-direction:column;flex:1;"></div>
+            <div class="kc-controls">
+                <button class="kc-next-btn" id="kcNextBtn" disabled>Далее</button>
+            </div>
+        </div>
+
+        <!-- Завершено -->
+        <div class="kc-screen kc-screen-done" id="scrDone">
+            <h2>Тестирование завершено</h2>
+            <button class="kc-return-btn" id="kcReturnBtn">
+                Вернуться к категориям
+            </button>
+        </div>
+
+    </div>
+</div>
+
+<script src="{% static 'knowledge_check/js/knowledge.js' %}"></script>
+
+{% endblock %}

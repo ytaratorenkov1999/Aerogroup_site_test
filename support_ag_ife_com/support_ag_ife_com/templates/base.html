@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <link rel="icon" type="image/png" href="{% static 'support/images/logo_icon.png' %}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <link rel="stylesheet" href="{% static 'support/css/base.css' %}?v=5">
+</head>
+<body>
+<div class="main">
+    <button class="menu-toggle" id="menuToggle" aria-label="Открыть меню">
+        <i class="ti ti-menu-2"></i>
+    </button>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div class="sidebar" id="sidebar">
+        <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" aria-label="Свернуть меню" title="Свернуть меню">
+            <i class="ti ti-chevron-left"></i>
+        </button>
+        <div class="logo">
+            <a href="{% url 'home' %}">
+                <img src="{% static 'support/images/logo.jpg' %}" alt="logo"></a>
+            <span>Система управлением знаниями</span>
+        </div>
+        <div class="menu">
+            <ul>
+            {% for p in menu %}
+            <li>
+              <a href="{% url p.url_name %}" title="{{ p.title }}">
+                  <img src="{% static p.icons %}" alt="icons" class="sidebar-icon">
+                  <span class="sidebar-label">{{ p.title }}</span>
+              </a>
+            </li>
+            {% endfor %}
+            </ul>
+        </div>
+    </div>
+    <div class="main-container">
+
+        <div class="login-profile">
+
+            <!-- Колокольчик -->
+            <div class="notif-bell-wrap">
+                <div class="notif-bell" id="bellBtn" title="Уведомления">
+                    <i class="ti ti-bell"></i>
+                    <span class="notif-badge hidden" id="notifBadge">0</span>
+                </div>
+
+                <!-- Дропдаун уведомлений -->
+                <div class="notif-dropdown" id="notifDropdown">
+                    <div class="notif-dropdown-header">
+                        <span>Уведомления</span>
+                        <span class="notif-unread-count hidden" id="notifUnreadCount">0 новых</span>
+                    </div>
+                    <div class="notif-list" id="notifList">
+                        <div class="notif-empty">Нет уведомлений</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Профиль -->
+            <div class="profile-wrap">
+                <div class="profile" id="profileBtn">
+                    {% if user_photo %}
+                        <img src="{{ user_photo }}" alt="profile">
+                    {% else %}
+                        <img src="{% static 'support/images/avatar_man.jpg' %}" alt="profile">
+                    {% endif %}
+                </div>
+
+                <div class="profile-dropdown" id="profileDropdown">
+                    <div class="profile-dropdown-header">
+                        <span class="profile-dropdown-name">{{ user_name|default:"Пользователь" }}</span>
+                        <span class="profile-dropdown-role">{{ user_role|default:"" }}</span>
+                    </div>
+                    {% for i in user_menu %}
+                        <a href="{% url i.url_name %}">
+                            <img class="dropdown-icon" src="{% static i.icons %}" alt="profile">
+                            {{ i.title }}
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="header">
+            <h1>{{ title }}</h1>
+        </div>
+
+        <div class="content">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+</div>
+
+<script>
+const profileBtn     = document.getElementById('profileBtn');
+const profileDropdown = document.getElementById('profileDropdown');
+const bellBtn        = document.getElementById('bellBtn');
+const notifDropdown  = document.getElementById('notifDropdown');
+const notifBadge     = document.getElementById('notifBadge');
+const notifList      = document.getElementById('notifList');
+const notifUnreadCount = document.getElementById('notifUnreadCount');
+
+// ── Бургер-меню (выдвижной сайдбар на узких экранах) ──
+const menuToggle     = document.getElementById('menuToggle');
+const sidebar        = document.getElementById('sidebar');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
+const menuToggleIcon = menuToggle ? menuToggle.querySelector('i') : null;
+
+function setBurgerIcon(isOpen) {
+    if (!menuToggleIcon) return;
+    menuToggleIcon.className = isOpen ? 'ti ti-x' : 'ti ti-menu-2';
+}
+
+function closeSidebar() {
+    sidebar.classList.remove('open');
+    sidebarOverlay.classList.remove('open');
+    setBurgerIcon(false);
+}
+
+if (menuToggle) {
+    menuToggle.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const isOpen = sidebar.classList.toggle('open');
+        sidebarOverlay.classList.toggle('open', isOpen);
+        setBurgerIcon(isOpen);
+    });
+}
+if (sidebarOverlay) {
+    sidebarOverlay.addEventListener('click', closeSidebar);
+}
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeSidebar();
+});
+
+// ── Сворачивание сайдбара в иконочный режим (десктоп, ≥1100px) ──
+const sidebarCollapseBtn = document.getElementById('sidebarCollapseBtn');
+const SIDEBAR_COLLAPSE_KEY = 'sidebarCollapsed';
+
+function applyCollapsedState(collapsed) {
+    sidebar.classList.toggle('collapsed', collapsed);
+    if (sidebarCollapseBtn) {
+        sidebarCollapseBtn.setAttribute('title', collapsed ? 'Развернуть меню' : 'Свернуть меню');
+        sidebarCollapseBtn.setAttribute('aria-label', collapsed ? 'Развернуть меню' : 'Свернуть меню');
+    }
+}
+
+// Восстанавливаем сохранённое состояние при загрузке
+applyCollapsedState(localStorage.getItem(SIDEBAR_COLLAPSE_KEY) === '1');
+
+if (sidebarCollapseBtn) {
+    sidebarCollapseBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const collapsed = !sidebar.classList.contains('collapsed');
+        applyCollapsedState(collapsed);
+        localStorage.setItem(SIDEBAR_COLLAPSE_KEY, collapsed ? '1' : '0');
+    });
+}
+
+// ── Подсветка активного пункта меню (по текущему URL) ──
+(function() {
+    const path = window.location.pathname;
+    const links = Array.from(document.querySelectorAll('.menu ul li a'));
+    let best = null, bestLen = -1;
+    links.forEach(a => {
+        const href = a.getAttribute('href');
+        if (!href) return;
+        const match = href === path || (href !== '/' && path.startsWith(href));
+        if (match && href.length > bestLen) {
+            best = a;
+            bestLen = href.length;
+        }
+    });
+    if (best) best.classList.add('active');
+})();
+
+// ── Профиль ──
+profileBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    notifDropdown.classList.remove('open');
+    profileDropdown.classList.toggle('open');
+});
+
+// ── Колокольчик ──
+bellBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    profileDropdown.classList.remove('open');
+    const wasOpen = notifDropdown.classList.contains('open');
+    notifDropdown.classList.toggle('open');
+    if (!wasOpen) {
+        const icon = bellBtn.querySelector('i');
+        icon.classList.add('bell-shake');
+        setTimeout(() => icon.classList.remove('bell-shake'), 500);
+        loadNotifications();
+    }
+});
+
+document.addEventListener('click', function() {
+    notifDropdown.classList.remove('open');
+    profileDropdown.classList.remove('open');
+});
+
+// ── Загрузка уведомлений ──
+function getCsrf() {
+    return document.cookie.split(';')
+        .map(c => c.trim())
+        .find(c => c.startsWith('csrftoken='))
+        ?.split('=')[1] || '';
+}
+
+async function loadNotifications() {
+    try {
+        // Загружаем уведомления из обоих приложений параллельно
+        const [respAfl, respRus] = await Promise.all([
+            fetch('/bdaeroflot/notifications/api/'),
+            fetch('/bdrussia/notifications/api/'),
+        ]);
+        const [dataAfl, dataRus] = await Promise.all([
+            respAfl.json(),
+            respRus.json(),
+        ]);
+
+        // Помечаем источник для корректного удаления/прочтения
+        const notifsAfl = (dataAfl.notifications || []).map(n => ({...n, _source: 'aeroflot'}));
+        const notifsRus = (dataRus.notifications || []).map(n => ({...n, _source: 'russia'}));
+
+        // Объединяем и сортируем по дате (новые сверху)
+        const all = [...notifsAfl, ...notifsRus].sort((a, b) =>
+            new Date(b.created_at) - new Date(a.created_at)
+        ).slice(0, 30);
+
+        const unreadCount = all.filter(n => !n.is_read).length;
+        renderNotifications(all, unreadCount);
+    } catch(e) {
+        notifList.innerHTML = '<div class="notif-empty">Ошибка загрузки</div>';
+    }
+}
+
+function renderNotifications(notifications, unreadCount) {
+    notifBadge.textContent = unreadCount;
+    notifBadge.className = 'notif-badge' + (unreadCount === 0 ? ' hidden' : '');
+    bellBtn.className = 'notif-bell' + (unreadCount > 0 ? ' has-unread' : '');
+
+    if (notifUnreadCount) {
+        notifUnreadCount.textContent = `${unreadCount} нов.`;
+        notifUnreadCount.classList.toggle('hidden', unreadCount === 0);
+    }
+
+    if (!notifications || notifications.length === 0) {
+        notifList.innerHTML = '<div class="notif-empty">Нет уведомлений</div>';
+        return;
+    }
+
+    notifList.innerHTML = notifications.map(n => `
+        <div class="notif-item ${n.is_read ? 'read' : 'unread'}" data-id="${n.id}" data-read="${n.is_read}" data-url="${n.article_url}" data-source="${n._source || 'aeroflot'}">
+            <div class="notif-unread-dot ${n.is_read ? 'invisible' : ''}"></div>
+            <div class="notif-body">
+                <p class="notif-text">
+                    ${n.text}
+                    <a class="notif-article-link" href="${n.article_url}" onclick="event.stopPropagation()">«${n.article_title}»</a>
+                </p>
+                <span class="notif-time">${n.created_at}</span>
+            </div>
+            <div class="notif-actions">
+                <button class="notif-action-btn notif-delete-btn" data-id="${n.id}" data-source="${n._source || 'aeroflot'}" title="Удалить">
+                    <i class="ti ti-trash"></i>
+                </button>
+            </div>
+        </div>
+    `).join('');
+
+    // Клик по строке — прочитать (если не прочитано) и перейти по ссылке
+    notifList.querySelectorAll('.notif-item').forEach(item => {
+        item.addEventListener('click', async function() {
+            const id     = this.dataset.id;
+            const isRead = this.dataset.read === 'true';
+            const url    = this.dataset.url;
+            const source = this.dataset.source;
+            const base   = source === 'russia' ? '/bdrussia' : '/bdaeroflot';
+            if (!isRead) {
+                await postAction(`${base}/notifications/${id}/read/`);
+            }
+            window.location.href = url;
+        });
+    });
+
+    // Корзина — удалить
+    notifList.querySelectorAll('.notif-delete-btn').forEach(btn => {
+        btn.addEventListener('click', async function(e) {
+            e.stopPropagation();
+            const id     = this.dataset.id;
+            const source = this.dataset.source;
+            const base   = source === 'russia' ? '/bdrussia' : '/bdaeroflot';
+            const item   = notifList.querySelector(`.notif-item[data-id="${id}"]`);
+            if (item) {
+                item.style.transition = 'opacity 0.2s, transform 0.2s';
+                item.style.opacity = '0';
+                item.style.transform = 'translateX(12px)';
+                setTimeout(async () => {
+                    await postAction(`${base}/notifications/${id}/delete/`);
+                    await loadNotifications();
+                }, 200);
+            }
+        });
+    });
+}
+
+async function postAction(url) {
+    await fetch(url, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCsrf() },
+    });
+}
+
+// Загружаем бейдж сразу при загрузке страницы (не открывая дропдаун)
+async function loadBadge() {
+    try {
+        const [respAfl, respRus] = await Promise.all([
+            fetch('/bdaeroflot/notifications/api/'),
+            fetch('/bdrussia/notifications/api/'),
+        ]);
+        const [dataAfl, dataRus] = await Promise.all([
+            respAfl.json(),
+            respRus.json(),
+        ]);
+        const unreadCount = (dataAfl.unread_count || 0) + (dataRus.unread_count || 0);
+        notifBadge.textContent = unreadCount;
+        notifBadge.className = 'notif-badge' + (unreadCount === 0 ? ' hidden' : '');
+        bellBtn.className = 'notif-bell' + (unreadCount > 0 ? ' has-unread' : '');
+        if (notifUnreadCount) {
+            notifUnreadCount.textContent = `${unreadCount} нов.`;
+            notifUnreadCount.classList.toggle('hidden', unreadCount === 0);
+        }
+    } catch(e) {}
+}
+
+loadBadge();
+</script>
+</body>
+</html>

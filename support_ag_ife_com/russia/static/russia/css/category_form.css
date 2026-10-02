@@ -1,0 +1,160 @@
+:root {
+    /* Фирменный синий (кнопки, акценты) */
+    --akr-accent:        #e05555;
+    --akr-accent-hover:  #c0392b;
+
+    /* Основной синий (ссылки, фокус) */
+    --akr-primary:       #c0392b;
+    --akr-primary-dark:  #922b21;
+    --akr-primary-bg:    #fdf2f2;
+    --akr-primary-ring:  rgba(192, 57, 43, 0.12);
+
+    /* Красный (ошибки, удаление) */
+    --akr-danger:        #922b21;
+    --akr-danger-dark:   #7b241c;
+    --akr-danger-light:  #fadbd8;
+
+    /* Границы */
+    --akr-border:        #e0e0e0;
+    --akr-border-light:  #f5d5d5;
+
+    /* Фоны */
+    --akr-bg:            #fffafa;
+
+    /* Текст */
+    --akr-text:          #2d3748;
+    --akr-text-mid:      #4a5568;
+    --akr-text-muted:    #9aa3ad;
+    --akr-label:         #2c3e50;
+}
+.main-container .header h1 { color: #F08080; }
+
+
+/* ── Шапка ── */
+.akr-header-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 20px;
+    background: var(--akr-bg);
+    border: 1px solid var(--akr-border);
+    border-radius: 10px;
+    margin: 20px;
+}
+
+.breadcrumb {
+    font-size: 13px;
+    color: var(--akr-text-muted);
+    margin: 0;
+}
+
+.breadcrumb a {
+    color: var(--akr-primary);
+    text-decoration: none;
+    transition: color 0.15s;
+}
+
+.breadcrumb a:hover {
+    color: var(--akr-primary-dark);
+    text-decoration: underline;
+}
+
+/* ── Форма ── */
+.form-container {
+    background: var(--akr-bg);
+    border: 1px solid var(--akr-border);
+    border-radius: 12px;
+    padding: 30px;
+    margin: 0 20px 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-content { flex: 1; }
+
+.form-group { margin-bottom: 24px; }
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--akr-label);
+    font-size: 14px;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1px solid #dcdcdc;
+    border-radius: 6px;
+    font-size: 14px;
+    background: #fff;
+    color: var(--akr-text);
+    font-family: inherit;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--akr-primary);
+    box-shadow: 0 0 0 3px var(--akr-primary-ring);
+}
+
+.form-group textarea {
+    min-height: 150px;
+    resize: vertical;
+}
+
+.required { color: var(--akr-danger); }
+
+/* ── Кнопки ── */
+.form-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 28px;
+    padding-top: 20px;
+
+}
+
+.btn {
+    height: 30px;
+    padding: 0 16px;
+    border: 1px solid var(--akr-accent);
+    border-radius: 15px;
+    background: none;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    font-family: inherit;
+    color: var(--akr-accent);
+    transition: all 0.15s;
+    white-space: nowrap;
+}
+
+.btn:hover {
+    background: var(--akr-accent);
+    color: white;
+}
+
+.btn-icon {
+    width: 16px;
+    height: 16px;
+    margin-right: 6px;
+    flex-shrink: 0;
+    filter: invert(42%) sepia(73%) saturate(500%) hue-rotate(165deg) brightness(90%);
+    transition: filter 0.15s;
+}
+
+.btn:hover .btn-icon {
+    filter: brightness(0) invert(1);
+}

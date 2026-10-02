@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'daily_schedule/css/style.css' %}?v=1">
+
+<div class="schedule-outer">
+    <div class="daily-container">
+
+        <div class="schedule-topbar">
+            <div class="period-selector">
+                <button id="prev-period">&#8592;</button>
+                <span id="current-period"></span>
+                <button id="next-period">&#8594;</button>
+            </div>
+            {% if can_edit_schedule %}
+            <button class="action-button" id="upload-schedule">Загрузить график</button>
+            <input type="file" id="xlsx-input" accept=".xlsx" style="display:none;">
+            {% endif %}
+        </div>
+
+        <h3 class="schedule-subtitle">Табель учётного времени</h3>
+
+        <div class="table-container">
+            <table id="time-table">
+                <thead id="scheduleHead"></thead>
+                <tbody id="scheduleBody"></tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <div class="legend-container">
+        <div class="legend-item">
+            <div class="legend-color lc-v"></div>
+            <div class="legend-text"><strong>"В"</strong> — Выходные и праздничные дни.</div>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color lc-yp"></div>
+            <div class="legend-text"><strong>"ЯП"</strong> — Полный рабочий день (8ч) в офисе, вне офиса: работа в порту, на дому, на выставке, удалённо.</div>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color lc-rv"></div>
+            <div class="legend-text"><strong>"РВ"</strong> — Работа в выходной и нерабочий праздничный день.</div>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'daily_schedule/js/main.js' %}"></script>
+
+{% endblock %}

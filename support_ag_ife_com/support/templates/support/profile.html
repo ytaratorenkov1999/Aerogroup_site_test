@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'support/css/profile.css' %}?v=1">
+
+<div class="profile-page"
+     id="profilePage"
+     data-default-avatar="{% static 'support/images/avatar_man.jpg' %}"
+     data-toast-message="{% if messages %}{% for m in messages %}{{ m }}{% endfor %}{% endif %}">
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="profile-header">
+            <div class="profile-photo-wrap">
+                <img class="profile-photo" id="photoPreview"
+                     src="{% if employee.photo %}{{ employee.photo.url }}{% else %}{% static 'support/images/avatar_man.jpg' %}{% endif %}"
+                     alt="Фото">
+
+                <label class="profile-photo-btn" for="photoInput" title="Изменить фото">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                        <circle cx="12" cy="13" r="4"/>
+                    </svg>
+                </label>
+
+                <input class="profile-photo-input" type="file" id="photoInput"
+                       name="photo" accept="image/*">
+                <input type="hidden" name="delete_photo" id="deletePhotoInput" value="">
+
+                {% if employee.photo %}
+                <button type="button" class="profile-photo-delete" id="deletePhotoBtn" title="Удалить фото">
+                    <svg viewBox="0 0 24 24">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                        <path d="M10 11v6M14 11v6"/>
+                        <path d="M9 6V4h6v2"/>
+                    </svg>
+                </button>
+                {% endif %}
+            </div>
+
+            <div class="profile-header-info">
+                <p class="profile-header-name">{{ employee.full_name }}</p>
+                <p class="profile-header-role">{{ employee.role.name|default:"Роль не назначена" }}</p>
+                {% if employee.department %}
+                <span class="profile-header-dept">{{ employee.department.name }}</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="profile-card">
+            <div class="profile-card__title">Личные данные</div>
+            <div class="profile-grid">
+
+                <div class="form-group">
+                    <label>ФИО</label>
+                    <input type="text" name="full_name" value="{{ employee.full_name }}">
+                </div>
+
+                <div class="form-group">
+                    <label>Дата рождения</label>
+                    <input type="date" name="birthday"
+                           value="{{ employee.birthday|date:'Y-m-d'|default:'' }}">
+                </div>
+
+                <div class="form-group">
+                    <label>Почта</label>
+                    <input type="email" name="email" value="{{ employee.email }}">
+                </div>
+
+                <div class="form-group">
+                    <label>Телефон</label>
+                    <input type="tel" name="phone" value="{{ employee.phone }}">
+                </div>
+
+            </div>
+        </div>
+
+        <div class="profile-card">
+            <div class="profile-card__title">Рабочие данные</div>
+            <div class="profile-grid">
+
+                <div class="form-group">
+                    <label>Должность</label>
+                    <input type="text" name="position" value="{{ employee.position }}">
+                </div>
+
+                <div class="form-group">
+                    <label>Отдел</label>
+                    <input type="text" value="{{ employee.department.name|default:'—' }}" disabled>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="profile-card">
+            <div class="profile-card__title">Ролевая модель</div>
+            <div class="profile-grid">
+
+                <div class="form-group">
+                    <label>Роль</label>
+                    <input type="text" value="{{ employee.role.name|default:'—' }}" disabled>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-save">Сохранить</button>
+        </div>
+
+    </form>
+</div>
+
+<div id="toast" class="toast">
+    <div id="toast-icon" class="toast-icon">✓</div>
+    <div class="toast-body">
+        <div id="toast-title" class="toast-title"></div>
+        <div id="toast-message" class="toast-message"></div>
+    </div>
+    <button class="toast-close" onclick="hideToast()">✕</button>
+</div>
+
+<script src="{% static 'support/js/profile.js' %}"></script>
+
+{% endblock %}

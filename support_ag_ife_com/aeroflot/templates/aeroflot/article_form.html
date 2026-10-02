@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'aeroflot/css/article_form.css' %}">
+<div class="afl-header-bar">
+    <div class="breadcrumb">
+        <a href="{% url 'aeroflot:index' %}">База знаний Аэрофлот</a>
+        {% if article %}
+            {% if article.category.parent %}
+                → <a href="{% url 'aeroflot:category_detail' article.category.parent.slug %}">
+                    {{ article.category.parent.name }}
+                  </a>
+            {% endif %}
+            → <a href="{% url 'aeroflot:category_detail' article.category.slug %}">
+                {{ article.category.name }}
+              </a>
+            → <a href="{% url 'aeroflot:article_detail' article.slug %}">{{ article.title }}</a>
+            → Редактирование
+        {% else %}
+            → Создание статьи
+        {% endif %}
+    </div>
+</div>
+
+<div class="form-container">
+    <form method="post" enctype="multipart/form-data" id="articleForm" novalidate>
+        {% csrf_token %}
+
+        <div class="form-content">
+
+            <!-- Название -->
+            <div class="form-group">
+                <label for="title">Наименование статьи <span class="required">*</span></label>
+                <input type="text" id="title" name="title"
+                       value="{{ article.title|default:'' }}{% if not article %}{{ form_data.title|default:'' }}{% endif %}"
+                       placeholder="Введите название статьи" maxlength="100" autofocus>
+                <div class="field-error" id="title-error">Введите название статьи</div>
+            </div>
+
+            <!-- Категория -->
+            <div class="form-group">
+                <label for="category_id">Категория <span class="required">*</span></label>
+                <select id="category_id" name="category_id">
+                    <option value="">Выберите категорию</option>
+                    {% for cat in categories %}
+                        {% if article and article.category_id == cat.id %}
+                            <option value="{{ cat.id }}" selected>{{ cat.get_full_path }}</option>
+                        {% elif selected_category_id and selected_category_id == cat.id|stringformat:"s" %}
+                            <option value="{{ cat.id }}" selected>{{ cat.get_full_path }}</option>
+                        {% else %}
+                            <option value="{{ cat.id }}">{{ cat.get_full_path }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+                <div class="field-error" id="category_id-error">Выберите категорию</div>
+            </div>
+
+            <!-- Markdown редактор -->
+            <div class="form-group">
+                <label>Содержание статьи (Markdown) <span class="required">*</span></label>
+                <div class="markdown-editor-container" id="editorContainer">
+                    <div class="markdown-toolbar">
+                        <button type="button" class="toolbar-btn" data-md-wrap="**|**"><strong>Ж</strong></button>
+                        <button type="button" class="toolbar-btn" data-md-wrap="*|*"><em>К</em></button>
+                        <button type="button" class="toolbar-btn" data-md-wrap="`|`">&lt;/&gt;</button>
+                        <div class="toolbar-divider"></div>
+                        <button type="button" class="toolbar-btn" data-md-prefix="# ">H1</button>
+                        <button type="button" class="toolbar-btn" data-md-prefix="## ">H2</button>
+                        <button type="button" class="toolbar-btn" data-md-prefix="### ">H3</button>
+                        <div class="toolbar-divider"></div>
+                        <button type="button" class="toolbar-btn" data-md-prefix="- ">• Список</button>
+                        <button type="button" class="toolbar-btn" data-md-prefix="1. ">1. Список</button>
+                        <button type="button" class="toolbar-btn" data-md-prefix="> ">Цитата</button>
+                        <div class="toolbar-divider"></div>
+                        <button type="button" class="toolbar-btn" data-md-wrap="[|](url)">Ссылка</button>
+                        <button type="button" class="toolbar-btn" data-md-code-block>Код</button>
+                        <button type="button" class="toolbar-btn" id="btnInsertImage">🖼 Изображение</button>
+                        <input type="file" id="imgFileInput" accept=".jpg,.jpeg,.png,.gif,.bmp,.webp" style="display:none">
+                        <button type="button" class="toolbar-btn" data-md-mermaid>◎ Диаграмма</button>
+                        <div class="mode-switch">
+                            <button type="button" class="mode-btn active" id="editBtn" data-mode="edit">Редактирование</button>
+                            <button type="button" class="mode-btn" id="previewBtn" data-mode="preview">Предпросмотр</button>
+                        </div>
+                    </div>
+                    <div class="editor-content">
+                        <textarea id="content" name="content"
+                                  placeholder="Введите содержание в формате Markdown"
+                        >{% if article %}{{ article.content }}{% elif form_data %}{{ form_data.content }}{% endif %}</textarea>
+                        <div id="preview"></div>
+                    </div>
+                    <div class="markdown-help">
+                        <div class="markdown-help-title">Подсказки по Markdown:</div>
+                        <div class="markdown-help-items">
+                            <div class="help-item"><span class="help-syntax">**текст**</span> = <strong>жирный</strong></div>
+                            <div class="help-item"><span class="help-syntax">*текст*</span> = <em>курсив</em></div>
+                            <div class="help-item"><span class="help-syntax">`код`</span> = <code>код</code></div>
+                            <div class="help-item"><span class="help-syntax"># Заголовок</span></div>
+                            <div class="help-item"><span class="help-syntax">- пункт</span> = список</div>
+                            <div class="help-item"><span class="help-syntax">![alt](url)</span> = изображение</div>
+                            <div class="help-item"><span class="help-syntax">```mermaid</span> = диаграмма</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="field-error" id="content-error">Введите содержание статьи</div>
+            </div>
+
+            <!-- Существующие вложения (редактирование) -->
+            {% if article and article.attachments.all %}
+            <div class="existing-attachments">
+                <label>Текущие вложения:</label>
+                <div class="existing-attachments-grid">
+                    {% for att in article.attachments.all %}
+                    <a class="existing-attachment" href="{{ att.file.url }}" target="_blank"
+                       id="attachment-{{ att.id }}">
+                        <div class="file-info">
+                            {% if att.is_image %}
+                                <div class="file-type-badge-sm file-type-img">IMG</div>
+                            {% elif '.pdf' in att.file_name %}
+                                <div class="file-type-badge-sm file-type-pdf">PDF</div>
+                            {% elif '.doc' in att.file_name %}
+                                <div class="file-type-badge-sm file-type-doc">DOC</div>
+                            {% elif '.xls' in att.file_name %}
+                                <div class="file-type-badge-sm file-type-xls">XLS</div>
+                            {% else %}
+                                <div class="file-type-badge-sm file-type-other">FILE</div>
+                            {% endif %}
+                            <span class="file-name">{{ att.file_name }}</span>
+                        </div>
+                        <button type="button" class="attachment-delete-btn"
+                                data-attachment-id="{{ att.id }}" title="Удалить">×</button>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Новые вложения -->
+            <div class="form-group">
+                <label>
+                    Вложения
+                    <span style="color:#94a3b8;font-weight:normal;font-size:13px">
+                        — изображения, документы, PDF, Excel · макс. 50 МБ
+                    </span>
+                </label>
+                <div class="file-upload-area" id="fileUploadArea">
+                    <div class="upload-icon">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                    </div>
+                    <div class="upload-text">Перетащите файлы или нажмите для выбора</div>
+                    <div class="upload-hint">Изображения отображаются в статье. Все файлы доступны для скачивания.</div>
+                </div>
+                <input type="file" id="fileInput" name="attachments" class="file-input" multiple
+                       accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.xls,.xlsx,.txt">
+                <div class="files-list" id="filesList"></div>
+            </div>
+
+        </div>
+
+        <div class="form-actions">
+            <a href="{% url 'aeroflot:index' %}" class="btn">Отменить</a>
+            <button type="submit" class="btn">
+                {% if article %}
+                    Сохранить изменения
+                {% else %}
+                    Создать статью
+                {% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>mermaid.initialize({ startOnLoad: false, theme: 'default' });</script>
+
+<!-- ── Модалка подтверждения удаления вложения ── -->
+<div id="attachmentDeleteModal" class="delete-modal">
+    <div class="delete-modal-content">
+        <div class="delete-modal-title">Подтверждение удаления</div>
+        <div class="delete-modal-text">
+            Вы уверены, что хотите удалить вложение<br>
+            <strong id="attachmentDeleteName"></strong>?
+        </div>
+        <div class="delete-modal-actions">
+            <button type="button" class="modal-btn modal-btn-cancel"
+                    id="attachmentDeleteCancel">Отмена</button>
+            <button type="button" class="modal-btn modal-btn-delete"
+                    id="attachmentDeleteConfirm">Удалить</button>
+        </div>
+    </div>
+</div>
+<script>
+    window.AEROFLOT_URLS = {
+        attachmentDeleteBase: "{% url 'aeroflot:index' %}attachment/",
+        attachmentDeletePendingBase: "{% url 'aeroflot:attachment_delete_pending' 0 %}".replace('/0/', '/'),
+        imageUploadUrl: "{% url 'aeroflot:attachment_upload_image' %}",
+        articleId: "{% if article %}{{ article.id }}{% endif %}"
+    };
+</script>
+<script src="{% static 'aeroflot/js/article_form.js' %}"></script>
+{% endblock %}

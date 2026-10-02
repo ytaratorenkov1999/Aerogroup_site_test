@@ -1,0 +1,264 @@
+.profile-page {
+    padding: 1rem 1.5rem;
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 20px;
+}
+
+.profile-photo-wrap {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.profile-photo {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #e0e0e0;
+}
+
+.profile-photo-btn {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 32px;
+    height: 32px;
+    background: #03A0DC;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.profile-photo-btn svg {
+    width: 15px;
+    height: 15px;
+    stroke: #fff;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.profile-photo-delete {
+    position: absolute;
+    bottom: 2px;
+    left: 2px;
+    width: 32px;
+    height: 32px;
+    background: #e57373;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+}
+
+.profile-photo-delete:hover {
+    background: #c0392b;
+}
+
+.profile-photo-delete svg {
+    width: 15px;
+    height: 15px;
+    stroke: #fff;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.profile-photo-input {
+    display: none;
+}
+
+.profile-header-info {
+    flex: 1;
+}
+
+.profile-header-name {
+    font-size: 22px;
+    font-weight: 500;
+    color: #263238;
+    margin: 0 0 6px;
+}
+
+.profile-header-role {
+    font-size: 14px;
+    color: #90A4AE;
+    margin: 0 0 10px;
+}
+
+.profile-header-dept {
+    display: inline-block;
+    font-size: 12px;
+    color: #03A0DC;
+    background: #e3f6fd;
+    padding: 4px 14px;
+    border-radius: 20px;
+}
+
+.profile-card {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 20px;
+}
+
+.profile-card__title {
+    font-size: 12px;
+    font-weight: 500;
+    color: #90A4AE;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 24px;
+}
+
+.profile-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    font-size: 12px;
+    color: #90A4AE;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.form-group input {
+    padding: 12px 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 15px;
+    color: #263238;
+    transition: border-color 0.15s;
+    background: #fff;
+    width: 100%;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #03A0DC;
+    box-shadow: 0 0 0 3px rgba(3, 160, 220, 0.08);
+}
+
+.form-group input:disabled {
+    background: #f5f5f5;
+    color: #b0bec5;
+    cursor: not-allowed;
+    border-color: #eeeeee;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0 0 8px;
+}
+
+.btn-save {
+    background: #03A0DC;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 36px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s;
+    font-family: inherit;
+}
+
+.btn-save:hover {
+    background: #0288c0;
+}
+
+.toast {
+    position: fixed;
+    top: 30px;
+    right: 30px;
+    background: white;
+    border-radius: 12px;
+    padding: 16px 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    max-width: 360px;
+    z-index: 9999;
+    transform: translateY(-100px);
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.toast.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.toast-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    color: white;
+    margin-top: 1px;
+    background: #03A0DC;
+}
+
+.toast-body { flex: 1; }
+
+.toast-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.toast-message {
+    font-size: 13px;
+    color: #888;
+    line-height: 1.4;
+}
+
+.toast-close {
+    background: none;
+    border: none;
+    color: #bbb;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.toast-close:hover { color: #888; }

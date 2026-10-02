@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ru">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Авторизация | SupportAG</title>
+        <link rel="stylesheet" href="{% static 'support/css/login.css' %}?v=5">
+    </head>
+    <body>
+
+        <div class="card">
+
+            <div class="card__logo">
+                <img class="card__logo-img" src="{% static 'support/images/logo.jpg' %}" alt="Логотип">
+            </div>
+
+            <div class="card__auth">
+
+                {% if error %}
+                <div class="error-message">{{ error }}</div>
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="input-group">
+                        <label class="input-group__label" for="login">Логин</label>
+                        <input class="input-group__field" type="text" id="login" name="login"
+                            placeholder="Введите логин" autocomplete="username">
+                    </div>
+
+                    <div class="input-group">
+                        <label class="input-group__label" for="password">Пароль</label>
+                        <input class="input-group__field" type="password" id="password" name="password"
+                            placeholder="Введите пароль" autocomplete="current-password">
+                    </div>
+
+                    <div class="checkbox-group">
+                        <input class="checkbox-group__field" type="checkbox" id="remember" name="remember">
+                        <label class="checkbox-group__label" for="remember">Запомнить пароль</label>
+                    </div>
+
+                    <button class="btn btn--primary" type="submit">Войти</button>
+
+                </form>
+
+            </div>
+        </div>
+
+    </body>
+</html>

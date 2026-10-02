@@ -1,0 +1,158 @@
+:root {
+    /* Фирменный синий (кнопки, акценты) */
+    --afl-accent:        #03a0dc;
+    --afl-accent-hover:  #0288c1;
+
+    /* Основной синий (ссылки, фокус) */
+    --afl-primary:       #1976d2;
+    --afl-primary-dark:  #1251a3;
+    --afl-primary-bg:    #f0f7ff;
+    --afl-primary-ring:  rgba(25, 118, 210, 0.12);
+
+    /* Красный (ошибки, удаление) */
+    --afl-danger:        #c0392b;
+    --afl-danger-dark:   #a93226;
+    --afl-danger-light:  #f5e6e6;
+
+    /* Границы */
+    --afl-border:        #e0e0e0;
+    --afl-border-light:  #e2e8f0;
+
+    /* Фоны */
+    --afl-bg:            #fafafa;
+
+    /* Текст */
+    --afl-text:          #2d3748;
+    --afl-text-mid:      #4a5568;
+    --afl-text-muted:    #9aa3ad;
+    --afl-label:         #2c3e50;
+}
+
+/* ── Шапка ── */
+.afl-header-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 20px;
+    background: var(--afl-bg);
+    border: 1px solid var(--afl-border);
+    border-radius: 10px;
+    margin: 20px;
+}
+
+.breadcrumb {
+    font-size: 13px;
+    color: var(--afl-text-muted);
+    margin: 0;
+}
+
+.breadcrumb a {
+    color: var(--afl-primary);
+    text-decoration: none;
+    transition: color 0.15s;
+}
+
+.breadcrumb a:hover {
+    color: var(--afl-primary-dark);
+    text-decoration: underline;
+}
+
+/* ── Форма ── */
+.form-container {
+    background: var(--afl-bg);
+    border: 1px solid var(--afl-border);
+    border-radius: 12px;
+    padding: 30px;
+    margin: 0 20px 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-content { flex: 1; }
+
+.form-group { margin-bottom: 24px; }
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--afl-label);
+    font-size: 14px;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1px solid #dcdcdc;
+    border-radius: 6px;
+    font-size: 14px;
+    background: #fff;
+    color: var(--afl-text);
+    font-family: inherit;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--afl-primary);
+    box-shadow: 0 0 0 3px var(--afl-primary-ring);
+}
+
+.form-group textarea {
+    min-height: 150px;
+    resize: vertical;
+}
+
+.required { color: var(--afl-danger); }
+
+/* ── Кнопки ── */
+.form-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 28px;
+    padding-top: 20px;
+
+}
+
+.btn {
+    height: 30px;
+    padding: 0 16px;
+    border: 1px solid var(--afl-accent);
+    border-radius: 15px;
+    background: none;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    font-family: inherit;
+    color: var(--afl-accent);
+    transition: all 0.15s;
+    white-space: nowrap;
+}
+
+.btn:hover {
+    background: var(--afl-accent);
+    color: white;
+}
+
+.btn-icon {
+    width: 16px;
+    height: 16px;
+    margin-right: 6px;
+    flex-shrink: 0;
+    filter: invert(42%) sepia(73%) saturate(500%) hue-rotate(165deg) brightness(90%);
+    transition: filter 0.15s;
+}
+
+.btn:hover .btn-icon {
+    filter: brightness(0) invert(1);
+}

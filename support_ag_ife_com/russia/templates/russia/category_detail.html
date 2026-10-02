@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'russia/css/category_detail.css' %}">
+
+<div id="categoryApp"
+     data-search-url="{% url 'russia:search' %}"
+     data-article-base="/bdrussia/article/">
+
+    <div class="akr-header-bar">
+        <div class="breadcrumb">
+            <a href="{% url 'russia:index' %}">База знаний Россия</a>
+            {% if category.parent %}
+                → <a href="{% url 'russia:category_detail' category.parent.slug %}">
+                    {{ category.parent.name }}
+                  </a>
+            {% endif %}
+            → {{ category.name }}
+        </div>
+        <div class="akr-action-buttons">
+            {% if can_edit %}
+            <a href="{% url 'russia:category_create' %}?parent_id={{ category.id }}" class="btn btn-primary">
+                <img src="{% static 'support/images/plus_akr.svg' %}" class="btn-icon" alt=""> Категория
+            </a>
+            <a href="{% url 'russia:article_create' %}?category_id={{ category.id }}" class="btn btn-primary">
+                <img src="{% static 'support/images/plus_akr.svg' %}" class="btn-icon" alt=""> Статья
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="search-container">
+        <input type="text" id="searchInput" class="search-input"
+               placeholder="Поиск по базе знаний Россия...">
+        <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M11 6C13.7614 6 16 8.23858 16 11M16.6588 16.6549L21 21M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z"
+                  stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </div>
+
+    <div id="searchResults" class="search-results">
+        <div id="searchResultsGrid" class="search-results-grid"></div>
+    </div>
+
+    <div id="contentSection" class="content-section">
+        {% if subcategories %}
+        <div class="categories-grid">
+            {% for sub in subcategories %}
+            <a href="{% url 'russia:category_detail' sub.slug %}" class="category-card">
+                {{ sub.name }}
+            </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if articles %}
+        <div class="articles-section">
+            <div class="articles-grid">
+                {% for article in articles %}
+                <a href="{% url 'russia:article_detail' article.slug %}" class="article-card">
+                    <div class="article-title">{{ article.title }}</div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if not subcategories and not articles %}
+        <div class="no-content">В этой категории пока нет подкатегорий и статей</div>
+        {% endif %}
+    </div>
+</div>
+
+<script src="{% static 'russia/js/category_detail.js' %}"></script>
+{% endblock %}

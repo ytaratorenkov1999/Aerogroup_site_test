@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'support/css/index.css' %}?v=2">
+<div class="dashboard">
+    <div class="widget">
+        <div class="widget__title">Предстоящие встречи</div>
+        <div class="meetings-grid">
+            <a href="https://telemost.yandex.ru/j/02129986235123" target="_blank" class="call-card">
+                <svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="4" y="12" width="30" height="22" rx="6" stroke="#03A0DC" stroke-width="2"/>
+                    <path d="M34 22l14-7v22l-14-7V22z" stroke="#03A0DC" stroke-width="2" stroke-linejoin="round"/>
+                    <circle cx="16" cy="23" r="5" stroke="#03A0DC" stroke-width="2"/>
+                    <circle cx="32" cy="14" r="3" fill="#4CAF50"/>
+                </svg>
+                <p class="call-card__label">Присоединиться</p>
+                <p class="call-card__sub">Тех. поддержка</p>
+            </a>
+            <a href="https://telemost.yandex.ru/j/43380988188792" target="_blank" class="call-card">
+                <svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="4" y="12" width="30" height="22" rx="6" stroke="#03A0DC" stroke-width="2"/>
+                    <path d="M34 22l14-7v22l-14-7V22z" stroke="#03A0DC" stroke-width="2" stroke-linejoin="round"/>
+                    <circle cx="16" cy="23" r="5" stroke="#03A0DC" stroke-width="2"/>
+                    <circle cx="32" cy="14" r="3" fill="#4CAF50"/>
+                </svg>
+                <p class="call-card__label">Присоединиться</p>
+                <p class="call-card__sub">ПАО «Аэрофлот»</p>
+            </a>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

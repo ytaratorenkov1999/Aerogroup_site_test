@@ -1,0 +1,231 @@
+:root {
+    /* Фирменный синий (кнопки, акценты) */
+    --afl-accent:        #03a0dc;
+    --afl-accent-hover:  #0288c1;
+
+    /* Основной синий (ссылки, фокус) */
+    --afl-primary:       #1976d2;
+    --afl-primary-dark:  #1251a3;
+    --afl-primary-bg:    #f0f7ff;
+    --afl-primary-ring:  rgba(25, 118, 210, 0.12);
+
+    /* Красный (ошибки, удаление) */
+    --afl-danger:        #c0392b;
+    --afl-danger-dark:   #a93226;
+    --afl-danger-light:  #f5e6e6;
+
+    /* Границы */
+    --afl-border:        #e0e0e0;
+    --afl-border-light:  #e2e8f0;
+
+    /* Фоны */
+    --afl-bg:            #fafafa;
+
+    /* Текст */
+    --afl-text:          #2d3748;
+    --afl-text-mid:      #4a5568;
+    --afl-text-muted:    #9aa3ad;
+    --afl-label:         #2c3e50;
+}
+
+/* ── Шапка ── */
+.afl-header-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 20px;
+    background: var(--afl-bg);
+    border: 1px solid var(--afl-border);
+    border-radius: 10px;
+    margin-bottom: 20px;
+    margin: 20px;
+}
+
+.breadcrumb {
+    font-size: 14px;
+    color: var(--afl-text-muted);
+    flex: 1;
+    margin: 0;
+}
+
+.breadcrumb a {
+    color: var(--afl-primary);
+    text-decoration: none;
+    transition: color 0.15s;
+}
+
+.breadcrumb a:hover {
+    color: var(--afl-primary-dark);
+    text-decoration: underline;
+}
+
+.afl-action-buttons {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+/* ── Кнопки ── */
+.btn {
+    height: 30px;
+    padding: 0 16px;
+    border: 1px solid var(--afl-accent);
+    border-radius: 15px;
+    background: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    font-family: inherit;
+    color: var(--afl-accent);
+    transition: all 0.15s;
+    white-space: nowrap;
+}
+
+.btn:hover {
+    background: var(--afl-accent);
+    color: white;
+}
+
+.btn-icon {
+    width: 16px;
+    height: 16px;
+    margin-right: 6px;
+    flex-shrink: 0;
+    filter: invert(42%) sepia(73%) saturate(500%) hue-rotate(165deg) brightness(90%);
+    transition: filter 0.15s;
+}
+
+.btn:hover .btn-icon {
+    filter: brightness(0) invert(1);
+}
+
+/* ── Поиск ── */
+.search-container {
+    position: relative;
+    margin-bottom: 24px;
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 12px 44px 12px 16px;
+    border: 1px solid var(--afl-border-light);
+    border-radius: 8px;
+    font-size: 14px;
+    background: white;
+    color: var(--afl-text);
+    font-family: inherit;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--afl-primary);
+    box-shadow: 0 0 0 3px var(--afl-primary-ring);
+}
+
+.search-icon {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    opacity: 0.4;
+}
+
+/* ── Результаты поиска ── */
+.search-results { display: none; margin-bottom: 20px; }
+.search-results.active { display: block; }
+
+.search-results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 50px;
+    justify-items: center;
+    align-items: center;
+    padding: 0 20px;
+    margin: 0 20px;
+}
+
+.search-result-card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    width: 100%;
+    max-width: 160px;
+    aspect-ratio: 1 / 1;
+    background: linear-gradient(135deg, #03a0dc, #b0cfe0);
+    border: 2px solid transparent;
+    border-radius: 50%;
+    text-decoration: none;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    transition: transform 0.3s, box-shadow 0.3s;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 16px;
+    word-break: break-word;
+}
+
+.search-result-card:hover {
+    border-color: white;
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+    background: linear-gradient(135deg, #0288c1, #9abdd0);
+}
+
+.result-title {
+    font-size: inherit;
+    font-weight: inherit;
+    color: inherit;
+    margin: 0;
+}
+
+.no-results {
+    text-align: center;
+    color: #6c757d;
+    font-size: 14px;
+    padding: 20px;
+    grid-column: 1 / -1;
+}
+
+.categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 25px;
+    padding: 0 20px;
+    margin-bottom: 40px;
+}
+
+.category-card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    height: 200px;
+    padding: 0 20px;
+    background: var(--afl-accent);
+    border: 2px solid transparent;
+    border-radius: 16px;
+    text-decoration: none;
+    color: white;
+    font-size: 22px;
+    font-weight: 700;
+    transition: transform 0.3s, box-shadow 0.3s;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.category-card:hover {
+    border-color: white;
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+}
+
+.content-section.hidden { display: none; }
