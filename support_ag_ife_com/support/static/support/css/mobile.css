@@ -280,7 +280,8 @@
   }
 
   /* ── Общие элементы страниц ── */
-  body.m-ui .card {
+  body.m-ui .card,
+  body.m-ui .widget {
     max-width: 100%;
   }
 
@@ -457,6 +458,74 @@
 
   body.m-ui .articles-section {
     padding: 0;
+  }
+
+  /* ── Главная ── */
+  body.m-ui .dashboard {
+    display: block;
+  }
+
+  body.m-ui .widget {
+    padding: 16px;
+    border: 1px solid var(--m-line);
+    border-radius: 20px;
+    background: var(--m-card);
+    box-shadow: none;
+  }
+
+  body.m-ui .widget__title {
+    margin: 0 0 14px;
+    padding: 0;
+    border: 0;
+    background: none;
+    font-size: 19px;
+    font-weight: 600;
+    text-align: left;
+    color: var(--m-text);
+  }
+
+  body.m-ui .meetings-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  body.m-ui .call-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: none;
+    padding: 26px 20px 20px;
+    border: 0;
+    border-radius: var(--m-radius);
+    background: #ededef;
+    text-decoration: none;
+  }
+
+  body.m-ui .call-card svg {
+    width: 56px;
+    height: 56px;
+    margin-bottom: 18px;
+  }
+
+  body.m-ui .call-card__label {
+    width: 100%;
+    margin: 0 0 10px;
+    padding: 11px 0;
+    border: 1.5px solid var(--m-text);
+    border-radius: 12px;
+    background: #fff;
+    color: var(--m-text);
+    font-size: 17px;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  body.m-ui .call-card__sub {
+    margin: 0;
+    font-size: 15px;
+    color: #3a3a3c;
   }
 
   /* ── Статья ── */
@@ -862,6 +931,10 @@
   body.m-ui.m-login,
   body.m-ui.m-login * {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  body.m-ui .dashboard {
+    padding: 0;
   }
 
   body.m-ui .content-section {

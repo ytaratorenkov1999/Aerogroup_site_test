@@ -15,11 +15,7 @@ from .models import (
     ArticleNotification, ArticleAcknowledgement,
 )
 from django.urls import reverse
-from support.activity import log_activity
-from support.models import UserActivity
 from support.roles import role_required, ROLE_ADMIN, ROLE_MANAGER, ROLE_EDITOR
-
-ACTIVITY_SECTION = 'БЗ Аэрофлот'
 
 logger = logging.getLogger(__name__)
 
@@ -240,8 +236,6 @@ def category_create(request):
         )
         logger.info("Категория создана: id=%d '%s', пользователь='%s'",
                     category.id, category.name, request.user.username)
-        log_activity(request.user, UserActivity.CATEGORY_CREATED, category.name, ACTIVITY_SECTION,
-                     reverse('aeroflot:category_detail', args=[category.slug]))
         return redirect('aeroflot:index')
 
     return render(request, 'aeroflot/category_form.html', {
@@ -279,8 +273,6 @@ def category_edit(request, category_id):
         category.save()
         logger.info("Категория обновлена: id=%d '%s'→'%s', пользователь='%s'",
                     category.id, old_name, name, request.user.username)
-        log_activity(request.user, UserActivity.CATEGORY_EDITED, category.name, ACTIVITY_SECTION,
-                     reverse('aeroflot:category_detail', args=[category.slug]))
         return redirect('aeroflot:index')
 
     return render(request, 'aeroflot/category_form.html', {
@@ -297,7 +289,6 @@ def category_delete(request, category_id):
     category = get_object_or_404(BdAeroflotCategory, id=category_id)
     logger.info("Категория удалена: id=%d '%s', пользователь='%s'",
                 category.id, category.name, request.user.username)
-    log_activity(request.user, UserActivity.CATEGORY_DELETED, category.name, ACTIVITY_SECTION)
     category.delete()
     return redirect('aeroflot:index')
 
@@ -350,8 +341,6 @@ def article_create(request):
 
         logger.info("Статья создана: id=%d '%s', пользователь='%s'",
                     article.id, article.title, request.user.username)
-        log_activity(request.user, UserActivity.ARTICLE_CREATED, article.title, ACTIVITY_SECTION,
-                     reverse('aeroflot:article_detail', args=[article.slug]))
         return redirect('aeroflot:article_detail', article_slug=article.slug)
 
     return render(request, 'aeroflot/article_form.html', {
@@ -446,8 +435,6 @@ def article_edit(request, article_slug):
 
         logger.info("Статья обновлена: id=%d '%s'→'%s', пользователь='%s'",
                     article.id, old_title, title, request.user.username)
-        log_activity(request.user, UserActivity.ARTICLE_EDITED, article.title, ACTIVITY_SECTION,
-                     reverse('aeroflot:article_detail', args=[article.slug]))
         return redirect('aeroflot:article_detail', article_slug=article.slug)
 
     return render(request, 'aeroflot/article_form.html', {
@@ -465,7 +452,6 @@ def article_delete(request, article_slug):
     category_slug = article.category.slug
     logger.info("Статья удалена: id=%d '%s', пользователь='%s'",
                 article.id, article.title, request.user.username)
-    log_activity(request.user, UserActivity.ARTICLE_DELETED, article.title, ACTIVITY_SECTION)
     article.delete()
     return redirect('aeroflot:category_detail', category_slug=category_slug)
 
@@ -615,8 +601,6 @@ def article_acknowledge(request, article_slug):
     if created:
         logger.info("Пользователь '%s' ознакомился со статьёй id=%d '%s'",
                     request.user.username, article.id, article.title)
-        log_activity(request.user, UserActivity.ARTICLE_ACKNOWLEDGED, article.title, ACTIVITY_SECTION,
-                     reverse('aeroflot:article_detail', args=[article.slug]))
 
     # Возвращаем данные профиля для отрисовки аватара в JS
     try:

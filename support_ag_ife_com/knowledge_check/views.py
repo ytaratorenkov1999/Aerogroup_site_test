@@ -6,7 +6,6 @@ knowledge_check/views.py
 import json
 import logging
 from django.shortcuts import render, get_object_or_404
-from django.urls import reverse
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST, require_GET
@@ -24,8 +23,6 @@ from .services import (
     get_or_restore_question_order,
 )
 from .email import send_attempt_report
-from support.activity import log_activity
-from support.models import UserActivity
 
 logger = logging.getLogger('knowledge_check')
 
@@ -223,8 +220,6 @@ def complete_quiz(request):
     attempt.finished_at = timezone.now()
     attempt.save()
     logger.info(f'Тест «{category.name}» завершён пользователем «{request.user.username}» (попытка #{attempt.id})')
-    log_activity(request.user, UserActivity.QUIZ_COMPLETED, category.name,
-                 'Проверка знаний', reverse('knowledge_check:knowledge'))
 
     clear_question_order(request, attempt)
     send_attempt_report(attempt)

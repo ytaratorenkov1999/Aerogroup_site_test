@@ -2,8 +2,7 @@
 {% load static %}
 {% block content %}
 
-<link rel="stylesheet" href="{% static 'support/css/profile.css' %}?v=2">
-<link rel="stylesheet" href="{% static 'support/css/activity.css' %}?v=1">
+<link rel="stylesheet" href="{% static 'support/css/profile.css' %}?v=1">
 
 <div class="profile-page"
      id="profilePage"
@@ -50,21 +49,6 @@
                 {% endif %}
             </div>
         </div>
-
-        <div class="profile-tabs" role="tablist">
-            <button type="button" class="profile-tab active" role="tab" data-tab="activity">
-                <i class="ti ti-timeline"></i> Активность
-            </button>
-            <button type="button" class="profile-tab" role="tab" data-tab="settings">
-                <i class="ti ti-user-cog"></i> Личные данные
-            </button>
-        </div>
-
-        <div class="profile-panel" data-panel="activity" role="tabpanel">
-            {% include 'support/_activity.html' %}
-        </div>
-
-        <div class="profile-panel" data-panel="settings" role="tabpanel" hidden>
 
         <div class="profile-card">
             <div class="profile-card__title">Личные данные</div>
@@ -127,8 +111,6 @@
             <button type="submit" class="btn-save">Сохранить</button>
         </div>
 
-        </div>
-
     </form>
 </div>
 
@@ -141,7 +123,6 @@
     <button class="toast-close" onclick="hideToast()">✕</button>
 </div>
 
-<script src="{% static 'support/js/activity.js' %}"></script>
-<script src="{% static 'support/js/profile.js' %}?v=2"></script>
+<script src="{% static 'support/js/profile.js' %}"></script>
 
 {% endblock %}

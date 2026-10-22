@@ -9,7 +9,7 @@ from unfold.forms import AdminPasswordChangeForm, UserChangeForm, UserCreationFo
 admin.site.site_header  = 'Панель администратора'
 admin.site.site_title   = 'Aerogroup'
 admin.site.index_title  = 'Управление системой'
-from .models import Employee, EmployeeProfile, Department, Role, MeetingLink, UserActivity
+from .models import Employee, EmployeeProfile, Department, Role, MeetingLink
 from .roles import ROLE_ADMIN, ROLE_MANAGER, ROLE_EDITOR, ROLE_READER, ROLE_EXTERNAL
 
 
@@ -216,64 +216,19 @@ class EmployeeAdmin(BaseUserAdmin, ModelAdmin):
     position.short_description = 'Должность'
 
 
-
 # ══════════════════════════════════════════════════════════════
-#  Главная страница: ссылки на созвоны
+#  Ссылки на созвоны (главная страница)
 # ══════════════════════════════════════════════════════════════
 
 @admin.register(MeetingLink)
 class MeetingLinkAdmin(ModelAdmin):
-    list_display       = ('title', 'description', 'platform_name', 'schedule', 'open_link', 'order', 'is_active')
+    list_display       = ('title', 'open_link', 'order', 'is_active')
     list_display_links = ('title',)
     list_editable      = ('order', 'is_active')
-    list_filter        = ('is_active',)
-    search_fields      = ('title', 'description', 'url')
-    ordering           = ('order', 'title')
-    fieldsets = (
-        (None, {
-            'fields': ('title', 'description', 'url'),
-        }),
-        ('Отображение на главной', {
-            'fields': ('schedule', 'order', 'is_active'),
-        }),
-    )
-
-    def platform_name(self, obj):
-        return obj.platform
-    platform_name.short_description = 'Площадка'
+    search_fields      = ('title', 'url')
+    ordering           = ('order', 'id')
+    fields             = ('title', 'url', 'order', 'is_active')
 
     def open_link(self, obj):
-        return format_html('<a href="{}" target="_blank" rel="noopener">Открыть ↗</a>', obj.url)
+        return format_html('<a href="{}" target="_blank" rel="noopener">{}</a>', obj.url, obj.url)
     open_link.short_description = 'Ссылка'
-
-
-# ══════════════════════════════════════════════════════════════
-#  Активность сотрудников (журнал, только просмотр)
-# ══════════════════════════════════════════════════════════════
-
-@admin.register(UserActivity)
-class UserActivityAdmin(ModelAdmin):
-    list_display    = ('created_at', 'employee_name', 'action', 'section', 'target_link')
-    list_filter     = ('action', 'section', 'user__profile__department')
-    search_fields   = ('user__username', 'user__profile__full_name', 'target')
-    date_hierarchy  = 'created_at'
-    list_select_related = ('user', 'user__profile')
-    list_per_page   = 50
-
-    def has_add_permission(self, request):
-        return False
-
-    def has_change_permission(self, request, obj=None):
-        return False
-
-    def employee_name(self, obj):
-        profile = getattr(obj.user, 'profile', None)
-        return (profile and profile.full_name) or obj.user.username
-    employee_name.short_description = 'Сотрудник'
-    employee_name.admin_order_field = 'user__profile__full_name'
-
-    def target_link(self, obj):
-        if obj.url:
-            return format_html('<a href="{}" target="_blank" rel="noopener">{}</a>', obj.url, obj.target or '—')
-        return obj.target or '—'
-    target_link.short_description = 'Объект'

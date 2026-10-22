@@ -15,11 +15,7 @@ from .models import (
     BdRussiaCategory, BdRussiaArticle, BdRussiaAttachment,
     RussiaArticleNotification, RussiaArticleAcknowledgement,
 )
-from support.activity import log_activity
-from support.models import UserActivity
 from support.roles import role_required, ROLE_ADMIN, ROLE_MANAGER, ROLE_EDITOR
-
-ACTIVITY_SECTION = 'БЗ Россия'
 
 logger = logging.getLogger(__name__)
 
@@ -195,8 +191,6 @@ def category_create(request):
         )
         logger.info("Категория Russia создана: id=%d '%s', пользователь='%s'",
                     category.id, category.name, request.user.username)
-        log_activity(request.user, UserActivity.CATEGORY_CREATED, category.name, ACTIVITY_SECTION,
-                     reverse('russia:category_detail', args=[category.slug]))
         return redirect('russia:index')
 
     return render(request, 'russia/category_form.html', {
@@ -234,8 +228,6 @@ def category_edit(request, category_id):
         category.save()
         logger.info("Категория Russia обновлена: id=%d '%s'→'%s', пользователь='%s'",
                     category.id, old_name, name, request.user.username)
-        log_activity(request.user, UserActivity.CATEGORY_EDITED, category.name, ACTIVITY_SECTION,
-                     reverse('russia:category_detail', args=[category.slug]))
         return redirect('russia:index')
 
     return render(request, 'russia/category_form.html', {
@@ -252,7 +244,6 @@ def category_delete(request, category_id):
     category = get_object_or_404(BdRussiaCategory, id=category_id)
     logger.info("Категория Russia удалена: id=%d '%s', пользователь='%s'",
                 category.id, category.name, request.user.username)
-    log_activity(request.user, UserActivity.CATEGORY_DELETED, category.name, ACTIVITY_SECTION)
     category.delete()
     return redirect('russia:index')
 
@@ -304,8 +295,6 @@ def article_create(request):
 
         logger.info("Статья Russia создана: id=%d '%s', пользователь='%s'",
                     article.id, article.title, request.user.username)
-        log_activity(request.user, UserActivity.ARTICLE_CREATED, article.title, ACTIVITY_SECTION,
-                     reverse('russia:article_detail', args=[article.slug]))
         return redirect('russia:article_detail', article_slug=article.slug)
 
     return render(request, 'russia/article_form.html', {
@@ -389,8 +378,6 @@ def article_edit(request, article_slug):
 
         logger.info("Статья Russia обновлена: id=%d '%s'→'%s', пользователь='%s'",
                     article.id, old_title, title, request.user.username)
-        log_activity(request.user, UserActivity.ARTICLE_EDITED, article.title, ACTIVITY_SECTION,
-                     reverse('russia:article_detail', args=[article.slug]))
         return redirect('russia:article_detail', article_slug=article.slug)
 
     return render(request, 'russia/article_form.html', {
@@ -408,7 +395,6 @@ def article_delete(request, article_slug):
     category_slug = article.category.slug
     logger.info("Статья Russia удалена: id=%d '%s', пользователь='%s'",
                 article.id, article.title, request.user.username)
-    log_activity(request.user, UserActivity.ARTICLE_DELETED, article.title, ACTIVITY_SECTION)
     article.delete()
     return redirect('russia:category_detail', category_slug=category_slug)
 
@@ -539,9 +525,6 @@ def article_acknowledge(request, article_slug):
     _, created = RussiaArticleAcknowledgement.objects.get_or_create(
         article=article, user=request.user
     )
-    if created:
-        log_activity(request.user, UserActivity.ARTICLE_ACKNOWLEDGED, article.title, ACTIVITY_SECTION,
-                     reverse('russia:article_detail', args=[article.slug]))
 
     try:
         profile   = request.user.profile
