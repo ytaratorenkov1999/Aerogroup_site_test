@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120">
+  <!-- Горизонтальная полоска -->
+  <rect x="25" y="55" width="70" height="10" rx="5" fill="#F08080" />
+  <!-- Вертикальная полоска -->
+  <rect x="55" y="25" width="10" height="70" rx="5" fill="#F08080" />
+</svg>

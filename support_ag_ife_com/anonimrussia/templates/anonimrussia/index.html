@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'anonimrussia/css/style.css' %}">
+
+<div class="frame">
+  <div class="panel">
+
+    <div class="example" aria-hidden="true">
+      <div class="example__body">
+        <span>6839|</span>
+        <span class="flap" id="flapName">TARATORENKOV YURII</span>
+        <span>|CCC|RU|... |</span>
+        <span class="flap" id="flapEmail">Y.TARATORENKOV@ROSSIYA-AIRLINES.COM</span>
+        <span>||RUSSIA|B738</span>
+      </div>
+    </div>
+
+    <!-- ===== БЛОК ИНСТРУКЦИИ ===== -->
+    <div class="instruction">
+      <div class="instruction__content">
+        <p class="instruction__title">Инструкция обезличивания</p>
+        <div class="instruction__text">
+
+          <p>К обработке принимаются исключительно файлы профилей и экипажа.</p>
+            <p>Варианты наименования могут быть следующими:</p>
+                <ul>
+                    <li>profile__124601.json.32423</li>
+                    <li>profile__124601.json</li>
+                    <li>[20260504-T-000625Z]_CrewManifestFull.csv</li>
+                    <li>[20260504-T-003033Z]_CrewManifestUpdate.csv</li>
+                    <li>[20260504-T-000625Z]_CrewManifestFull.csv.12312</li>
+                    <li>[20260504-T-003033Z]_CrewManifestUpdate.csv.12312</li>
+                </ul>
+            <p>Перетащить файл/файлы в соответствующее окно. На выходе автоматически будут загружены файл/файлы в
+                .zip архиве с обезличенными данными.</p>
+
+        </div>
+      </div>
+    </div>
+
+    {% csrf_token %}
+
+    <section class="upload" id="dropzone" tabindex="0" role="button" aria-label="Загрузить файлы">
+      <input type="file" id="fileInput" multiple hidden accept=".json,.csv">
+      <div class="upload__icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M12 16V4M12 4l-4 4M12 4l4 4"/>
+          <path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/>
+        </svg>
+      </div>
+      <p class="upload__title"></p>
+      <p class="upload__hint upload__browse" id="browseBtn">
+        <span>Перетащите файлы или нажмите для выбора</span>
+      </p>
+    </section>
+
+    <div class="chips" id="fileChips"></div>
+    <p class="chips__empty" id="chipsEmpty"></p>
+
+    <div class="log-window">
+      <div class="log-window__head">Журнал обработки</div>
+      <div class="log-window__body" id="logBody">
+        <p class="log-window__placeholder" id="logPlaceholder">Ожидание загрузки файлов...</p>
+      </div>
+    </div>
+
+    <div class="action">
+      <div class="action__summary" id="summary"></div>
+      <button
+        class="action__btn"
+        id="processBtn"
+        disabled
+        data-process-url="{% url 'anonimrussia:process_files' %}"
+      >Запустить обезличивание</button>
+    </div>
+
+  </div>
+</div>
+
+<script src="{% static 'anonimrussia/js/main.js' %}"></script>
+
+{% endblock %}

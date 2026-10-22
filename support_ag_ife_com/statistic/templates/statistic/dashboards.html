@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+
+<link rel="stylesheet" href="{% static 'statistic/css/style.css' %}">
+
+<div class="header-button">
+    <div class="action-block">
+        <div class="period-wrapper">
+            <button class="action-button" id="period-button">Период</button>
+            <div class="period-popup" id="period-popup">
+                <label>Месяц</label>
+                <select id="select-month">
+                    <option value="1">Январь</option>
+                    <option value="2">Февраль</option>
+                    <option value="3">Март</option>
+                    <option value="4">Апрель</option>
+                    <option value="5">Май</option>
+                    <option value="6">Июнь</option>
+                    <option value="7">Июль</option>
+                    <option value="8">Август</option>
+                    <option value="9">Сентябрь</option>
+                    <option value="10">Октябрь</option>
+                    <option value="11">Ноябрь</option>
+                    <option value="12">Декабрь</option>
+                </select>
+                <label>Год</label>
+                <select id="select-year"></select>
+                <button class="period-apply" id="period-apply">Применить</button>
+            </div>
+        </div>
+        {% if not stat %}
+        <span class="no-data">Нет данных — нажмите «Обновить статистику»</span>
+        {% endif %}
+    </div>
+    <div class="action-block">
+        <button class="action-button" id="update-button">Обновить статистику</button>
+        <button class="action-button" id="upload-statistic">Отчёт Excel</button>
+    </div>
+</div>
+
+<div class="cards-container">
+
+    <!-- 1. Динамика обращений -->
+    <div class="cards-row">
+        <div class="cards-statistic-full">
+            <div class="card">
+                <h3 class="card-title">Динамика обращений в техподдержку</h3>
+                <div class="chart-box line">
+                    <canvas id="helpdesk-request"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Круговые: по авиакомпаниям + по сервисам -->
+    <div class="cards-row">
+        <div class="cards-statistic">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Общее количество заявок по авиакомпаниям Crew Tablet</h3>
+                    {% include 'statistic/_export_button.html' with report='crew_tablet' %}
+                </div>
+                <div class="doughnut-box">
+                    <canvas id="total-company-request"></canvas>
+                </div>
+                <div class="company-legend">
+                    <div class="company-legend-item">
+                        <div class="company-legend-color" style="background:#4bb9e5"></div>
+                        <div class="company-legend-label">Аэрофлот</div>
+                        <div class="company-legend-count">{{ stat.request_count_afl|default:0 }}</div>
+                    </div>
+                    <div class="company-legend-item">
+                        <div class="company-legend-color" style="background:#ef9a9a"></div>
+                        <div class="company-legend-label">Россия</div>
+                        <div class="company-legend-count">{{ stat.request_count_akr|default:0 }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cards-statistic">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Общее количество заявок по сервисам</h3>
+                    {% include 'statistic/_export_button.html' with report='services' %}
+                </div>
+                <div class="doughnut-box">
+                    <canvas id="total-service-request"></canvas>
+                </div>
+                <div class="company-legend">
+                    <div class="company-legend-item">
+                        <div class="company-legend-color" style="background:#a7ddf4"></div>
+                        <div class="company-legend-label">IFE.AFL</div>
+                        <div class="company-legend-count">{{ stat.count_service_ife|default:0 }}</div>
+                    </div>
+                    <div class="company-legend-item">
+                        <div class="company-legend-color" style="background:#f5c4c4"></div>
+                        <div class="company-legend-label">r.portal</div>
+                        <div class="company-legend-count">{{ stat.count_service_rportal|default:0 }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Решённые обращения сотрудниками -->
+    <div class="cards-row">
+        <div class="cards-statistic-full">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Количество решенных обращений сотрудниками</h3>
+                    {% include 'statistic/_export_button.html' with report='admins' %}
+                </div>
+                <div class="chart-box bar">
+                    <canvas id="total-user-request"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Метрики: процент на 2 линию + среднее время -->
+    <div class="cards-row">
+        <div class="cards-statistic">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Процент переведенных обращений на 2 линию</h3>
+                    {% include 'statistic/_export_button.html' with report='second_line' %}
+                </div>
+                <div class="metric-circle">
+                    <canvas id="redirect-second-line"></canvas>
+                    <div class="metric-value">
+                        <div class="metric-number" id="redirect-value">0%</div>
+                    </div>
+                </div>
+                <div class="metric-subtitle" id="redirect-subtitle">Переведено: 0</div>
+            </div>
+        </div>
+
+        <div class="cards-statistic">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Среднее время первого ответа</h3>
+                    {% include 'statistic/_export_button.html' with report='first_answer' %}
+                </div>
+                <div class="metric-circle">
+                    <canvas id="avg-time-request"></canvas>
+                    <div class="metric-value">
+                        <div class="metric-number" id="avg-value">0 мин</div>
+                    </div>
+                </div>
+                <div class="metric-subtitle" id="avg-subtitle">Всего обращений: 0</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. Категории АФЛ — на всю ширину -->
+    <div class="cards-row">
+        <div class="cards-statistic-full">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Статистика по категориям обращений ПАО "Аэрофлот"</h3>
+                    {% include 'statistic/_export_button.html' with report='categories_afl' %}
+                </div>
+                <div class="chart-box cat">
+                    <canvas id="total-name-request-afl"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. Категории АКР — на всю ширину -->
+    <div class="cards-row">
+        <div class="cards-statistic-full">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Статистика по категориям обращений АК "Россия"</h3>
+                    {% include 'statistic/_export_button.html' with report='categories_akr' %}
+                </div>
+                <div class="chart-box cat">
+                    <canvas id="total-name-request-akr"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Тост уведомление -->
+<div class="toast" id="toast">
+    <div class="toast-icon" id="toast-icon">!</div>
+    <div class="toast-body">
+        <div class="toast-title" id="toast-title"></div>
+        <div class="toast-message" id="toast-message"></div>
+    </div>
+    <button id="toast-close" type="button" class="toast-close">✕</button>
+</div>
+
+<!-- Модалка с заявками -->
+<div id="tickets-modal" class="tickets-modal">
+    <div class="tickets-modal-box">
+        <div class="tickets-modal-header">
+            <div id="modal-category" class="tickets-modal-title"></div>
+            <button id="modal-close" type="button" class="tickets-modal-close">✕</button>
+        </div>
+        <div id="modal-links" class="tickets-modal-links"></div>
+    </div>
+</div>
+
+{{ dashboard_data|json_script:"dashboard-data" }}
+
+<script src="{% static 'statistic/js/statistic_main.js' %}"></script>
+<script src="{% static 'statistic/js/statistic_timer.js' %}"></script>
+<script src="{% static 'statistic/js/statistic_url.js' %}"></script>
+
+{% endblock %}

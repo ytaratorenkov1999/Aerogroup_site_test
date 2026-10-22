@@ -1,0 +1,894 @@
+html,
+body {
+  padding: 0px;
+  margin: 0px;
+  height: 100vh;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.main {
+  display: flex;
+  flex-direction: row;
+  height: 100vh;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  background-color: #fafafa;
+  width: 300px;
+  height: 100vh;
+  min-height: 0;
+  border-right: 1px solid #e0e0e0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex-shrink: 0;
+  position: relative;
+  transition: width 0.2s ease;
+}
+
+.sidebar-collapse-btn {
+  display: none;
+  position: absolute;
+  top: 18px;
+  right: -13px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid #e0e0e0;
+  background: #fff;
+  color: #8a8a8a;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 5;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  transition:
+    transform 0.2s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.sidebar-collapse-btn:hover {
+  color: #4a4a4a;
+  border-color: #ccc;
+}
+
+.sidebar-collapse-btn i {
+  font-size: 15px;
+  transition: transform 0.2s ease;
+}
+
+.sidebar.collapsed .sidebar-collapse-btn i {
+  transform: rotate(180deg);
+}
+
+.sidebar-label {
+  transition: opacity 0.15s ease;
+}
+
+.sidebar .logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 16px 6px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #ececec;
+}
+
+.sidebar .logo img {
+  width: 100%;
+  max-width: 300px;
+  height: auto;
+  margin: 12px 0px;
+  border-radius: 20px;
+  border: 1px solid #e0e0e0;
+}
+
+.sidebar .logo span {
+  font-size: 11px;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 0;
+}
+
+.menu ul {
+  padding: 0px;
+  list-style: none;
+  margin: 0;
+  padding-left: 24px;
+  padding-right: 16px;
+  margin-top: 10px;
+}
+
+.menu ul li {
+  margin-bottom: 5px;
+}
+
+.menu ul li a {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: #41414a;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 14px;
+  border-radius: 10px;
+  position: relative;
+  transition:
+    background 0.18s ease,
+    color 0.18s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.menu ul li a:hover {
+  background: #f0f0f0;
+  color: #26262b;
+}
+
+.menu ul li a:active {
+  background: #e6e6e6;
+}
+
+/* Активный пункт меню */
+.menu ul li a.active {
+  background: #eeeeee;
+  color: #26262b;
+  font-weight: 600;
+  box-shadow: inset 0 0 0 1px #e2e2e2;
+}
+
+.menu ul li a.active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 58%;
+  border-radius: 0 3px 3px 0;
+  background: #9a9a9a;
+}
+
+.sidebar-icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 12px;
+  flex-shrink: 0;
+  color: #8a8a8a;
+  opacity: 0.75;
+  transition:
+    opacity 0.18s ease,
+    color 0.18s ease,
+    filter 0.18s ease;
+  filter: grayscale(1) brightness(0.75);
+}
+
+.menu ul li a:hover .sidebar-icon,
+.menu ul li a.active .sidebar-icon {
+  opacity: 1;
+  color: #4a4a4a;
+  filter: grayscale(1) brightness(0.45);
+}
+
+.main-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  box-sizing: border-box;
+  padding: 24px 32px;
+}
+
+.main-container .header h1 {
+  color: #03a0dc;
+  margin: 0 0 16px 0;
+  font-size: clamp(22px, 2.4vw, 36px);
+}
+
+.login-profile {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  margin-top: -10px;
+  margin-right: -10px;
+  margin-bottom: 10px;
+}
+
+.notif-bell-wrap,
+.profile-wrap {
+  position: relative;
+}
+
+/* Профиль */
+.login-profile .profile {
+  display: flex;
+  border: 1px solid #e0e0e0;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+  overflow: hidden;
+}
+
+.login-profile .profile:hover {
+  border-color: #03a0dc;
+}
+
+.login-profile .profile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Колокольчик */
+.notif-bell {
+  position: relative;
+  display: flex;
+  border: 1px solid #e0e0e0;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
+  background: #fff;
+  flex-shrink: 0;
+}
+
+.notif-bell:hover {
+  border-color: #03a0dc;
+  background: #f0faff;
+}
+
+.notif-bell i {
+  font-size: 20px;
+  color: #aaa;
+  transition: color 0.2s;
+}
+
+.notif-bell.has-unread i {
+  color: #03a0dc;
+}
+
+.notif-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: #e24b4a;
+  color: #fff;
+  border-radius: 50%;
+  min-width: 16px;
+  height: 16px;
+  font-size: 10px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fff;
+  line-height: 1;
+  padding: 0 2px;
+}
+
+.notif-badge.hidden {
+  display: none;
+}
+
+/* Дропдаун уведомлений */
+.notif-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 14px;
+  width: 320px;
+  max-width: calc(100vw - 24px);
+  z-index: 200;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  opacity: 0;
+  transform: scale(0.97) translateY(-4px);
+  transform-origin: top right;
+  pointer-events: none;
+  transition:
+    opacity 0.16s ease,
+    transform 0.16s ease;
+}
+
+.notif-dropdown.open {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  pointer-events: auto;
+}
+
+.notif-dropdown-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2c2c2e;
+}
+
+.notif-unread-count {
+  font-size: 11px;
+  font-weight: 600;
+  color: #03a0dc;
+  background: #eaf6fc;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+.notif-unread-count.hidden {
+  display: none;
+}
+
+.notif-list {
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.notif-item {
+  display: flex;
+  gap: 10px;
+  padding: 12px 14px;
+  cursor: pointer;
+  border-bottom: 1px solid #f5f5f5;
+  align-items: flex-start;
+  transition: background 0.15s;
+}
+
+.notif-item:last-child {
+  border-bottom: none;
+}
+
+.notif-item:hover {
+  background: #f7fcfe;
+}
+
+.notif-item.unread {
+  background: #f0faff;
+}
+
+.notif-item.unread:hover {
+  background: #e5f5fc;
+}
+
+.notif-icon-wrap {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.notif-icon-wrap i {
+  font-size: 17px;
+}
+
+.notif-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.notif-text {
+  font-size: 13px;
+  color: #2c2c2e;
+  line-height: 1.4;
+  margin: 0 0 4px;
+}
+
+.notif-time {
+  font-size: 11px;
+  color: #bbb;
+}
+
+.notif-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #03a0dc;
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+
+.notif-dot.read {
+  background: transparent;
+}
+
+.notif-empty {
+  padding: 28px 16px;
+  text-align: center;
+  font-size: 13px;
+  color: #bbb;
+}
+
+/* Profile dropdown */
+.profile-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  overflow: hidden;
+  min-width: 190px;
+  z-index: 200;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  opacity: 0;
+  transform: scale(0.97) translateY(-4px);
+  transform-origin: top right;
+  pointer-events: none;
+  transition:
+    opacity 0.16s ease,
+    transform 0.16s ease;
+}
+
+.profile-dropdown.open {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  pointer-events: auto;
+}
+
+.profile-dropdown-header {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.profile-dropdown-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2c2c2e;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-dropdown-role {
+  font-size: 11px;
+  color: #999;
+}
+
+.profile-dropdown-role:empty {
+  display: none;
+}
+
+.profile-dropdown a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: #2c2c2e;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 10px 16px;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.profile-dropdown a:hover {
+  background: #f0f8fd;
+  color: #03a0dc;
+}
+
+.profile-dropdown a + a {
+  border-top: 1px solid #e0e0e0;
+}
+
+.profile-dropdown .dropdown-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  opacity: 0.5;
+}
+
+.profile-dropdown a:hover .dropdown-icon {
+  opacity: 1;
+}
+
+/* Контент */
+.content {
+  font-size: 16px;
+  line-height: 1.5;
+  color: #333;
+  flex: 1;
+  min-height: 0;
+  border: 1px solid #e0e0e0;
+  border-radius: 15px;
+  background: #fafafa;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 24px 28px;
+  box-sizing: border-box;
+}
+
+/* Анимация колокольчика */
+@keyframes bell-shake {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  15% {
+    transform: rotate(18deg);
+  }
+  30% {
+    transform: rotate(-16deg);
+  }
+  45% {
+    transform: rotate(12deg);
+  }
+  60% {
+    transform: rotate(-8deg);
+  }
+  75% {
+    transform: rotate(4deg);
+  }
+}
+
+.bell-shake {
+  animation: bell-shake 0.5s ease;
+}
+
+/* Ссылка на статью в уведомлении */
+.notif-article-link {
+  color: #03a0dc;
+  text-decoration: none;
+  font-weight: 500;
+}
+.notif-article-link:hover {
+  text-decoration: underline;
+}
+
+/* ── Новые стили уведомлений ── */
+.notif-item {
+  cursor: pointer;
+}
+
+.notif-unread-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #03a0dc;
+  flex-shrink: 0;
+  margin-top: 5px;
+}
+
+.notif-unread-dot.invisible {
+  background: transparent;
+}
+
+.notif-actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  margin-left: 4px;
+}
+
+.notif-action-btn {
+  background: none;
+  border: none;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    opacity 0.15s,
+    transform 0.15s;
+  flex-shrink: 0;
+  border-radius: 6px;
+}
+
+.notif-delete-btn {
+  color: #e24b4a;
+  opacity: 0;
+}
+
+.notif-item:hover .notif-delete-btn {
+  opacity: 0.55;
+}
+
+.notif-delete-btn i {
+  font-size: 17px;
+}
+
+.notif-delete-btn:hover {
+  opacity: 1 !important;
+  transform: scale(1.15);
+}
+
+@media (hover: none) {
+  .notif-delete-btn {
+    opacity: 0.45;
+  }
+}
+
+.sidebar,
+.content,
+.notif-list {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+.sidebar:hover,
+.content:hover,
+.notif-list:hover {
+  scrollbar-color: #d0d0d0 transparent;
+}
+
+.sidebar::-webkit-scrollbar,
+.content::-webkit-scrollbar,
+.notif-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-thumb,
+.content::-webkit-scrollbar-thumb,
+.notif-list::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 10px;
+}
+
+.sidebar:hover::-webkit-scrollbar-thumb,
+.content:hover::-webkit-scrollbar-thumb,
+.notif-list:hover::-webkit-scrollbar-thumb {
+  background: #d0d0d0;
+}
+
+.sidebar::-webkit-scrollbar-track,
+.content::-webkit-scrollbar-track,
+.notif-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Средние мониторы — слегка сужаем сайдбар и отступы */
+@media (max-width: 1600px) {
+  .sidebar {
+    width: 260px;
+  }
+  .main-container {
+    padding: 20px 24px;
+  }
+}
+
+/* Ноутбуки ~1366×768 и ниже — компактный сайдбар */
+@media (max-width: 1500px) {
+  .sidebar {
+    width: 230px;
+  }
+  .sidebar .logo span {
+    font-size: 10px;
+    margin-bottom: 10px;
+  }
+  .menu ul {
+    padding-left: 14px;
+    padding-right: 10px;
+    margin-top: 4px;
+  }
+  .menu ul li {
+    margin-bottom: 8px;
+  }
+  .menu ul li a {
+    font-size: 13px;
+  }
+  .main-container {
+    padding: 16px 20px;
+  }
+  .main-container .header h1 {
+    margin-bottom: 12px;
+  }
+  .login-profile .profile {
+    width: 44px;
+    height: 44px;
+  }
+  .notif-bell {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* Большие мониторы (2560×1440 и шире) — чуть свободнее */
+@media (min-width: 1900px) {
+  .sidebar {
+    width: 320px;
+  }
+  .main-container {
+    padding: 28px 40px;
+  }
+}
+
+/* ── Десктоп (≥1100px): кнопка ручного сворачивания сайдбара в иконочный режим ── */
+@media (min-width: 1100px) {
+  .sidebar-collapse-btn {
+    display: flex;
+  }
+
+  .sidebar.collapsed {
+    width: 72px;
+  }
+
+  .sidebar.collapsed .logo span,
+  .sidebar.collapsed .sidebar-label {
+    display: none;
+  }
+
+  .sidebar.collapsed .logo {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .sidebar.collapsed .logo img {
+    max-width: 36px;
+    border-radius: 8px;
+  }
+
+  .sidebar.collapsed .menu ul {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .sidebar.collapsed .menu ul li a {
+    justify-content: center;
+    padding: 10px;
+  }
+
+  .sidebar.collapsed .sidebar-icon {
+    margin-right: 0;
+  }
+
+  .sidebar.collapsed .menu ul li a.active::before {
+    left: 2px;
+  }
+}
+
+/* ── Бургер-кнопка (скрыта на десктопе) ── */
+.menu-toggle {
+  display: none;
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 300;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  background: #fff;
+  color: #03a0dc;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.menu-toggle:hover {
+  background: #f0faff;
+  border-color: #03a0dc;
+}
+
+.menu-toggle i {
+  font-size: 24px;
+}
+
+/* Затемнение фона при открытом меню */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 250;
+}
+
+.sidebar-overlay.open {
+  display: block;
+}
+
+/* ── Планшеты / узкие ноутбучные окна (600–1099px): автоматический иконочный сайдбар 64px ── */
+@media (min-width: 600px) and (max-width: 1099px) {
+  .sidebar {
+    width: 64px;
+  }
+
+  .sidebar-collapse-btn {
+    display: none;
+  }
+
+  .sidebar .logo span,
+  .sidebar-label {
+    display: none;
+  }
+
+  .sidebar .logo {
+    padding: 12px 0;
+  }
+
+  .sidebar .logo img {
+    max-width: 32px;
+    border-radius: 8px;
+  }
+
+  .menu ul {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .menu ul li a {
+    justify-content: center;
+    padding: 10px;
+  }
+
+  .sidebar-icon {
+    margin-right: 0;
+  }
+
+  .menu ul li a.active::before {
+    left: 2px;
+  }
+
+  .main-container {
+    padding: 18px 22px;
+  }
+}
+
+/* Узкие экраны (<600px) — сайдбар выезжает слева по бургеру */
+@media (max-width: 599px) {
+  .menu-toggle {
+    display: flex;
+  }
+
+  .sidebar-collapse-btn {
+    display: none;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 260px;
+    height: 100vh;
+    z-index: 260;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    border-right: 1px solid #e0e0e0;
+    box-shadow: 2px 0 16px rgba(0, 0, 0, 0.12);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .sidebar .logo span,
+  .sidebar-label {
+    display: block;
+  }
+
+  /* Контент занимает всю ширину; сверху место под бургер */
+  .main-container {
+    padding-top: 70px;
+  }
+}

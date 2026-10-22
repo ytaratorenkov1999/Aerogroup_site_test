@@ -1,0 +1,11 @@
+.venv/
+logs/*.log
+*.pyc
+__pycache__/
+db.sqlite3
+.env
+.idea/
+support_ag_ife_com/logs/*
+!support_ag_ife_com/logs/.gitkeep
+support_ag_ife_com/media/*
+!support_ag_ife_com/media/.gitkeep

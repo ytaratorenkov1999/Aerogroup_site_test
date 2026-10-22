@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'anonimaeroflot/css/style.css' %}">
+
+<div class="frame">
+  <div class="panel">
+
+    <div class="crew-badge" aria-hidden="true">
+      <div class="crew-badge__main">
+        <div class="crew-badge__field">
+          <span class="crew-badge__label">ID</span>
+          <span class="flap crew-badge__value" id="crewId">11805</span>
+        </div>
+
+        <div class="crew-badge__field">
+          <span class="crew-badge__label">Фамилия</span>
+          <span class="flap crew-badge__value" id="crewLastName">Фати</span>
+        </div>
+
+        <div class="crew-badge__field">
+          <span class="crew-badge__label">Имя</span>
+          <span class="flap crew-badge__value" id="crewFirstName">Вирджил Иванович</span>
+        </div>
+
+        <div class="crew-badge__field">
+          <span class="crew-badge__label">Должность</span>
+          <span class="flap crew-badge__value crew-badge__pill" id="crewPosition">FO</span>
+        </div>
+
+        <div class="crew-badge__field">
+          <span class="crew-badge__label">Deadhead</span>
+          <span class="flap crew-badge__value crew-badge__pill" id="crewDeadhead">false</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== БЛОК ИНСТРУКЦИИ ===== -->
+    <div class="crew-badge instruction">
+      <div class="instruction__body">
+        <p class="instruction__title">Инструкция обезличивания</p>
+        <div class="instruction__text">
+          <p>К обработке принимаются исключительно файлы экипажа, пассажиров и отчёта СБ.</p>
+          <p>Варианты наименования могут быть следующими:</p>
+          <ul>
+            <li>crew_123456.json — манифест экипажа рейса;</li>
+            <li>pax_123456_booking.json — данные бронирования пассажиров;</li>
+            <li>pax_123456_register.json — данные регистрации пассажиров;</li>
+            <li>Purser_Report_123456.xml — отчёт старшего бортпроводника;</li>
+          </ul>
+          <p>Перетащить файл/файлы в соответствующее окно. На выходе автоматически будут загружены
+            файл/файлы в <code>.zip</code> архиве с обезличенными данными.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    {% csrf_token %}
+
+    <section class="upload" id="dropzone" tabindex="0" role="button" aria-label="Загрузить файлы">
+      <input type="file" id="fileInput" multiple hidden accept=".json,.xml">
+      <div class="upload__icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M12 16V4M12 4l-4 4M12 4l4 4"/>
+          <path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/>
+        </svg>
+      </div>
+      <p class="upload__title"></p>
+      <p class="upload__hint upload__browse" id="browseBtn">
+        <span>Перетащите файлы или нажмите для выбора</span>
+      </p>
+    </section>
+
+    <div class="chips" id="fileChips"></div>
+    <p class="chips__empty" id="chipsEmpty"></p>
+
+    <div class="log-window">
+      <div class="log-window__head">Журнал обработки</div>
+      <div class="log-window__body" id="logBody">
+        <p class="log-window__placeholder" id="logPlaceholder">Ожидание загрузки файлов...</p>
+      </div>
+    </div>
+
+    <div class="action">
+      <div class="action__summary" id="summary"></div>
+      <button
+        class="action__btn"
+        id="processBtn"
+        disabled
+        data-process-url="{% url 'anonimaeroflot:process_files' %}"
+      >Запустить обезличивание</button>
+    </div>
+
+  </div>
+</div>
+
+<script src="{% static 'anonimaeroflot/js/main.js' %}"></script>
+
+{% endblock %}

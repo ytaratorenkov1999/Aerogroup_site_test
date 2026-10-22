@@ -1,0 +1,11 @@
+deploy:
+  tags: [support-server2]
+  only: [main]
+  when: manual
+  script:
+    - cd /www/Aerogroup_site
+    - git pull https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.ag-ife.com/support/supportsite.git main
+    - docker compose down
+    - docker compose up -d
+    - docker compose ps
+    - echo "Длина токена ${#CI_JOB_TOKEN}"

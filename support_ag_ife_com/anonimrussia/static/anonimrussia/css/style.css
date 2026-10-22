@@ -1,0 +1,415 @@
+/* ============================================
+   Базовые переменные и сброс
+   ============================================ */
+.frame {
+  --pink: #F08080;
+  --pink-dark: #99586A;
+  --pink-tint: #F8ECEF;
+  --panel-bg: #FFFFFF;
+  --border: #E9DEE1;
+  --text: #3E3335;
+  --text-muted: #8C7A7E;
+  --danger: #B84A5B;
+  --mono: 'Space Mono', ui-monospace, monospace;
+
+  margin: 14px 20px 20px;
+  border-radius: 18px;
+  overflow: hidden;
+  background: var(--panel-bg);
+  padding: 34px 40px 40px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.05);
+  color: var(--text);
+}
+
+.frame,
+.frame *,
+.frame *::before,
+.frame *::after {
+  box-sizing: border-box;
+}
+
+.frame :focus-visible {
+  outline: 2px solid var(--pink);
+  outline-offset: 2px;
+}
+
+@media (max-width: 640px) {
+  .frame {
+    margin: 0;
+    border-radius: 0;
+    padding: 24px 18px 32px;
+  }
+}
+
+.main-container .header h1 {
+  color: #F08080;
+}
+
+.frame .panel {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+}
+
+/* ============================================
+   Живой пример (flap анимация)
+   ============================================ */
+.frame .example {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #FAFBFC;
+  overflow: hidden;
+  margin-bottom: 26px;
+}
+
+.frame .example__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.frame .example__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.frame .example__badge::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--pink);
+}
+
+.frame .example__body {
+  padding: 22px 18px 10px;
+  font-family: var(--mono);
+  font-size: clamp(13px, 2.6vw, 17px);
+  line-height: 2.1;
+  overflow-x: auto;
+  white-space: nowrap;
+  color: var(--text-muted);
+}
+
+.frame .example__body .flap {
+  color: var(--pink);
+  font-weight: 700;
+  display: inline-block;
+  min-width: 1ch;
+}
+
+.frame .example__caption {
+  margin: 6px 0 0;
+  padding: 0 14px 14px;
+  font-family: inherit;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* ============================================
+   Зона загрузки файлов
+   ============================================ */
+.frame .upload {
+  border: 1.5px dashed #E3C7CD;
+  border-radius: 10px;
+  padding: 34px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .15s ease, background-color .15s ease;
+}
+
+.frame .upload:hover {
+  border-color: var(--pink);
+}
+
+.frame .upload.is-dragover {
+  border-color: var(--pink);
+  background: var(--pink-tint);
+}
+
+.frame .upload__icon {
+  width: 44px;
+  height: 44px;
+  margin: 0 auto 12px;
+  border-radius: 50%;
+  background: var(--pink-tint);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.frame .upload__icon svg {
+  width: 21px;
+  height: 21px;
+  color: var(--pink);
+}
+
+.frame .upload__title {
+  margin: 0 0 4px;
+  font-size: 14.5px;
+  font-weight: 600;
+}
+
+.frame .upload__hint {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.frame .upload__browse {
+  color: var(--pink);
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* ============================================
+   Чипы (список загруженных файлов)
+   ============================================ */
+.frame .chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.frame .chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 9px 30px 9px 10px;
+  background: #FAFBFC;
+  width: 224px;
+  position: relative;
+}
+
+.frame .chip__icon {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.frame .chip__icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.frame .chip__icon--json {
+  background: var(--pink-tint);
+  color: var(--pink);
+}
+
+.frame .chip__icon--csv {
+  background: #F1E9E9;
+  color: #9C8589;
+}
+
+.frame .chip__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.frame .chip__name {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.frame .chip__meta {
+  display: block;
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.frame .chip__remove {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid var(--border);
+  font-size: 10px;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.frame .chip__remove:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.frame .chips__empty {
+  margin-top: 18px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+/* ============================================
+   Окно логов
+   ============================================ */
+.frame .log-window {
+  margin-top: 24px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #FAFBFC;
+  overflow: hidden;
+}
+
+.frame .log-window__head {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.frame .log-window__body {
+  padding: 14px;
+  min-height: 110px;
+  max-height: 220px;
+  overflow-y: auto;
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.9;
+}
+
+.frame .log-window__placeholder {
+  color: var(--text-muted);
+}
+
+.frame .log-line {
+  white-space: pre-wrap;
+  color: var(--text);
+}
+
+.frame .log-line--done {
+  color: var(--pink-dark);
+  font-weight: 700;
+}
+
+.frame .log-line--error {
+  color: var(--danger);
+  font-weight: 700;
+}
+
+/* ============================================
+   Кнопка и информация
+   ============================================ */
+.frame .action {
+  margin-top: 26px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.frame .action__summary {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.frame .action__btn {
+  background: var(--pink);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 13px 26px;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 13.5px;
+  cursor: pointer;
+  transition: background-color .15s ease, transform .1s ease;
+}
+
+.frame .action__btn:hover:not(:disabled) {
+  background: var(--pink-dark);
+}
+
+.frame .action__btn:active:not(:disabled) {
+  transform: scale(.98);
+}
+
+.frame .action__btn:disabled {
+  background: #C9CFD4;
+  cursor: not-allowed;
+}
+
+/* ============================================
+   Адаптивность и доступность
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  .frame,
+  .frame * {
+    transition: none !important;
+  }
+}
+
+/* ============================================
+   Блок инструкции
+   ============================================ */
+.frame .instruction {
+  padding: 18px 20px;
+  margin-bottom: 26px;
+  background: var(--pink-tint);
+  border-radius: 10px;
+}
+
+.frame .instruction__title {
+  margin: 0 0 6px;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--pink);
+}
+
+.frame .instruction__text {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.frame .instruction__text p {
+  margin: 0 0 4px;
+}
+
+.frame .instruction__text p:last-child {
+  margin-bottom: 0;
+}
+
+@media (max-width: 640px) {
+  .frame .instruction {
+    padding: 14px 16px;
+  }
+}

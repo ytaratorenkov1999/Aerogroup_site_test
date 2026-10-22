@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'russia/css/article_detail.css' %}">
+
+<!-- Шапка -->
+<div class="akr-header-bar">
+    <div class="breadcrumb">
+        <a href="{% url 'russia:index' %}">База знаний Россия</a>
+        {% if article.category.parent %}
+            → <a href="{% url 'russia:category_detail' article.category.parent.slug %}">
+                {{ article.category.parent.name }}
+              </a>
+        {% endif %}
+        → <a href="{% url 'russia:category_detail' article.category.slug %}">
+            {{ article.category.name }}
+          </a>
+        → {{ article.title }}
+    </div>
+    <div class="akr-action-buttons">
+        {% if can_delete %}
+        <button type="button" class="btn btn-delete" onclick="openDeleteModal()">Удалить</button>
+        {% endif %}
+        {% if can_edit %}
+        <a href="{% url 'russia:article_edit' article.slug %}" class="btn btn-edit">
+            Редактировать
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Контейнер статьи -->
+<div class="article-container">
+    <div class="article-main-content">
+        <div class="article-content">
+            {{ article.get_content_as_html }}
+        </div>
+    </div>
+
+    <!-- Вложения -->
+    {% if article.attachments.all %}
+    <div class="attachments-section">
+        <h2 class="attachments-title">Вложения ({{ article.attachments.count }})</h2>
+        <div class="attachments-grid">
+            {% for att in article.attachments.all %}
+            <div class="attachment-item">
+                {% if att.is_image %}
+                    <img src="{{ att.file.url }}" alt="{{ att.file_name }}"
+                         class="attachment-image"
+                         onclick="openImageModal('{{ att.file.url }}')">
+                    <a href="{{ att.file.url }}" download="{{ att.file_name }}"
+                       class="attachment-link">Скачать</a>
+                {% else %}
+                    <div class="attachment-file">
+                        {% if '.pdf' in att.file_name %}
+                            <div class="file-type-badge file-type-pdf">PDF</div>
+                        {% elif '.doc' in att.file_name %}
+                            <div class="file-type-badge file-type-doc">DOC</div>
+                        {% elif '.xls' in att.file_name %}
+                            <div class="file-type-badge file-type-xls">XLS</div>
+                        {% else %}
+                            <div class="file-type-badge file-type-other">FILE</div>
+                        {% endif %}
+                        <div class="file-name">{{ att.file_name }}</div>
+                    </div>
+                    <a href="{{ att.file.url }}" download="{{ att.file_name }}"
+                       class="attachment-link">Скачать</a>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Футер статьи -->
+    <div class="article-footer">
+        <div class="footer-left">
+            <div class="creator-info">
+                <div class="creator-avatar">
+                    {% if article.creator.profile.photo %}
+                        <img src="{{ article.creator.profile.photo.url }}" alt="">
+                    {% else %}
+                        {{ article.creator.username|slice:":1"|upper }}
+                    {% endif %}
+                </div>
+                <div>
+                    <div class="label">Создатель</div>
+                    <div class="value">
+                        {% if article.creator.profile.full_name %}
+                            {{ article.creator.profile.full_name }}
+                        {% else %}
+                            {{ article.creator.username }}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% if article.last_editor %}
+            <div class="footer-divider"></div>
+            <div class="creator-info">
+                <div class="creator-avatar editor-avatar">
+                    {% if article.last_editor.profile.photo %}
+                        <img src="{{ article.last_editor.profile.photo.url }}" alt="">
+                    {% else %}
+                        {{ article.last_editor.username|slice:":1"|upper }}
+                    {% endif %}
+                </div>
+                <div>
+                    <div class="label">Изменено</div>
+                    <div class="value">
+                        {% if article.last_editor.profile.full_name %}
+                            {{ article.last_editor.profile.full_name }}
+                        {% else %}
+                            {{ article.last_editor.username }}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="footer-meta">
+            <div class="meta-item">
+                <div class="label">Дата создания</div>
+                <div class="value">{{ article.created_at|date:"d.m.Y" }}</div>
+            </div>
+            {% if article.last_editor %}
+            <div class="meta-item">
+                <div class="label">Дата изменения</div>
+                <div class="value">{{ article.updated_at|date:"d.m.Y" }}</div>
+            </div>
+            {% endif %}
+            <div class="meta-item">
+                <div class="label">Просмотров</div>
+                <div class="value">{{ article.views_count }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Блок ознакомления -->
+    <div class="ack-section">
+        <div class="ack-right" {% if not acknowledgements %}style="display:none"{% endif %}>
+            <span class="ack-label">Ознакомились:</span>
+            <div class="ack-avatars" id="ackAvatars">
+                {% for ack in acknowledgements %}
+                <div class="ack-avatar-wrap"
+                     title="{% if ack.user.profile.full_name %}{{ ack.user.profile.full_name }}{% else %}{{ ack.user.username }}{% endif %}">
+                    {% if ack.user.profile.photo %}
+                        <img class="ack-avatar" src="{{ ack.user.profile.photo.url }}" alt="">
+                    {% else %}
+                        <div class="ack-avatar ack-avatar-initials">
+                            {{ ack.user.username|slice:":1"|upper }}
+                        </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {% if not user_acknowledged %}
+        <form method="post" action="{% url 'russia:article_acknowledge' article.slug %}" id="ackForm">
+            {% csrf_token %}
+            <button type="submit" class="ack-btn" id="ackBtn">
+                <i class="ti ti-circle-check"></i>
+                Ознакомиться
+            </button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Модалка: удаление -->
+<div id="deleteModal" class="delete-modal">
+    <div class="delete-modal-content">
+        <div class="delete-modal-title">Подтверждение удаления</div>
+        <div class="delete-modal-text">
+            Вы уверены, что хотите удалить статью<br>
+            <strong>«{{ article.title }}»</strong>?
+        </div>
+        <div class="delete-modal-actions">
+            <button type="button" class="modal-btn modal-btn-cancel"
+                    onclick="closeDeleteModal()">Отмена</button>
+            <form method="post"
+                  action="{% url 'russia:article_delete' article.slug %}"
+                  style="display:inline">
+                {% csrf_token %}
+                <button type="submit" class="modal-btn modal-btn-delete">Удалить</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Модалка: изображение -->
+<div id="imageModal" class="image-modal" onclick="closeImageModal()">
+    <span class="close-modal">&times;</span>
+    <img class="modal-content-image" id="modalImage" alt="">
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>mermaid.initialize({ startOnLoad: false, theme: 'default' });</script>
+<script src="{% static 'russia/js/article_detail.js' %}"></script>
+
+{% endblock %}

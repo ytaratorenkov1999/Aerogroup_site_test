@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'aeroflot/css/category_detail.css' %}">
+
+<div id="categoryApp"
+     data-search-url="{% url 'aeroflot:search' %}"
+     data-article-base="/bdaeroflot/article/">
+
+    <div class="afl-header-bar">
+        <div class="breadcrumb">
+            <a href="{% url 'aeroflot:index' %}">База знаний Аэрофлот</a>
+            {% if category.parent %}
+                → <a href="{% url 'aeroflot:category_detail' category.parent.slug %}">
+                    {{ category.parent.name }}
+                  </a>
+            {% endif %}
+            → {{ category.name }}
+        </div>
+        <div class="afl-action-buttons">
+            {% if can_edit %}
+            <a href="{% url 'aeroflot:category_create' %}?parent_id={{ category.id }}" class="btn">+ Категория</a>
+            <a href="{% url 'aeroflot:article_create' %}?category_id={{ category.id }}" class="btn">+ Статья</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="search-container">
+        <input type="text" id="searchInput" class="search-input"
+               placeholder="Поиск по базе знаний Аэрофлот...">
+        <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M11 6C13.7614 6 16 8.23858 16 11M16.6588 16.6549L21 21M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z"
+                  stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </div>
+
+    <div id="searchResults" class="search-results">
+        <div id="searchResultsGrid" class="search-results-grid"></div>
+    </div>
+
+    <div id="contentSection" class="content-section">
+        {% if subcategories %}
+        <div class="categories-grid">
+            {% for sub in subcategories %}
+            <a href="{% url 'aeroflot:category_detail' sub.slug %}" class="category-card">
+                {{ sub.name }}
+            </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if articles %}
+        <div class="articles-section">
+            <div class="articles-grid">
+                {% for article in articles %}
+                <a href="{% url 'aeroflot:article_detail' article.slug %}" class="article-card">
+                    <div class="article-title">{{ article.title }}</div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if not subcategories and not articles %}
+        <div class="no-content">В этой категории пока нет подкатегорий и статей</div>
+        {% endif %}
+    </div>
+</div>
+
+<script src="{% static 'aeroflot/js/category_detail.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 22">
+  <!-- Документ -->
+  <path d="M6 3H13L17 7V18H6V3Z" stroke="#888" stroke-width="1.5" fill="none" stroke-linejoin="round"/>
+  <!-- Загнутый уголок -->
+  <path d="M13 3V7H17" stroke="#888" stroke-width="1.5" fill="none" stroke-linejoin="round"/>
+  <!-- Обычная строка -->
+  <path d="M8.5 9.5H14.5" stroke="#888" stroke-width="1.3" stroke-linecap="round"/>
+  <!-- Скрытая (обезличенная) строка -->
+  <rect x="8.5" y="11.3" width="6" height="2" rx="1" fill="#888"/>
+  <!-- Обычная строка -->
+  <path d="M8.5 15.3H12" stroke="#888" stroke-width="1.3" stroke-linecap="round"/>
+</svg>

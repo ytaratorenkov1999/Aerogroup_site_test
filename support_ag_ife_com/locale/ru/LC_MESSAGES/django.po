@@ -1,0 +1,438 @@
+# Русские переводы строк интерфейса django-unfold (в пакете нет ru-локали).
+# После правки .po пересобрать .mo: python manage.py compilemessages
+msgid ""
+msgstr ""
+"Project-Id-Version: support_ag_ife_com\n"
+"Language: ru\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || (n%100>=11 && n%100<=14)? 2 : 3);\n"
+
+#, python-format
+msgid "%(class_name)s %(instance)s"
+msgstr "%(class_name)s %(instance)s"
+
+msgid "Add new item"
+msgstr "Добавить"
+
+msgid "Add row"
+msgstr "Добавить строку"
+
+msgid "After you've created a user, you’ll be able to edit more user options."
+msgstr "После создания пользователя станут доступны остальные настройки."
+
+msgid "All applications"
+msgstr "Все разделы"
+
+msgid "Apply Filters"
+msgstr "Применить фильтры"
+
+#, python-format
+msgid ""
+"Are you sure you want to delete the %(object_name)s \"%(escaped_object)s\"? "
+"All of the following related items will be deleted:"
+msgstr ""
+"Вы уверены, что хотите удалить %(object_name)s «%(escaped_object)s»? Будут "
+"удалены все следующие связанные объекты:"
+
+msgid "Available shortcuts"
+msgstr "Доступные сочетания клавиш"
+
+msgid ""
+"Below is a preview of data to be imported. If you are satisfied with the "
+"results, click 'Confirm import'"
+msgstr ""
+"Ниже — предпросмотр импортируемых данных. Если всё верно, нажмите "
+"«Подтвердить импорт»"
+
+msgid "Bold"
+msgstr "Жирный"
+
+msgid "Cancel"
+msgstr "Отмена"
+
+msgid "Change History"
+msgstr "История изменений"
+
+msgid "Change reason"
+msgstr "Причина изменения"
+
+msgid "Changed by"
+msgstr "Кем изменено"
+
+msgid "Changelist shortcuts"
+msgstr "Сочетания клавиш в списке"
+
+msgid "Changes"
+msgstr "Изменения"
+
+msgid ""
+"Choose a date from the list below to revert to a previous version of this "
+"object"
+msgstr "Выберите дату, чтобы вернуть предыдущую версию объекта"
+
+msgid "Choose file to upload"
+msgstr "Выберите файл для загрузки"
+
+msgid "Click to cancel"
+msgstr "Нажмите, чтобы отменить"
+
+msgid "Click to download"
+msgstr "Нажмите, чтобы скачать"
+
+msgid "Code"
+msgstr "Код"
+
+msgid "Collapse"
+msgstr "Свернуть"
+
+msgid "Command tool shortcuts"
+msgstr "Сочетания клавиш командной строки"
+
+msgid "Comment"
+msgstr "Комментарий"
+
+msgid "Confirm import"
+msgstr "Подтвердить импорт"
+
+msgid "Create new record"
+msgstr "Создать запись"
+
+msgid "Current file"
+msgstr "Текущий файл"
+
+msgid "Dark"
+msgstr "Тёмная"
+
+msgid "Dataset not found. No action performed."
+msgstr "Набор данных не найден. Действие не выполнено."
+
+msgid "Date"
+msgstr "Дата"
+
+msgid "Date from"
+msgstr "Дата с"
+
+msgid "Date to"
+msgstr "Дата по"
+
+msgid "Default"
+msgstr "По умолчанию"
+
+#, python-format
+msgid ""
+"Deleting the %(object_name)s '%(escaped_object)s' would require deleting the"
+" following protected related objects:"
+msgstr ""
+"Удаление %(object_name)s «%(escaped_object)s» потребует удаления следующих "
+"защищённых связанных объектов:"
+
+#, python-format
+msgid ""
+"Deleting the %(object_name)s '%(escaped_object)s' would result in deleting "
+"related objects, but your account doesn't have permission to delete the "
+"following types of objects:"
+msgstr ""
+"Удаление %(object_name)s «%(escaped_object)s» приведёт к удалению связанных "
+"объектов, но у вашей учётной записи нет прав на удаление объектов следующих "
+"типов:"
+
+msgid "Edit"
+msgstr "Изменить"
+
+msgid "Enter an URL"
+msgstr "Введите URL"
+
+msgid "Export"
+msgstr "Экспорт"
+
+msgid "False"
+msgstr "Нет"
+
+msgid "Field"
+msgstr "Поле"
+
+msgid "Filters"
+msgstr "Фильтры"
+
+msgid "Forgotten your password or username?"
+msgstr "Забыли пароль или имя пользователя?"
+
+msgid "From"
+msgstr "С"
+
+msgid "General"
+msgstr "Основное"
+
+msgid "Global shortcuts"
+msgstr "Общие сочетания клавиш"
+
+msgid "Go back"
+msgstr "Назад"
+
+msgid "Group"
+msgstr "Группа"
+
+msgid "Group permissions"
+msgstr "Права группы"
+
+msgid "Heading"
+msgstr "Заголовок"
+
+msgid "Image preview"
+msgstr "Предпросмотр изображения"
+
+msgid "Import"
+msgstr "Импорт"
+
+msgid "Indent decrease"
+msgstr "Уменьшить отступ"
+
+msgid "Indent increase"
+msgstr "Увеличить отступ"
+
+msgid "Italic"
+msgstr "Курсив"
+
+msgid "Light"
+msgstr "Светлая"
+
+msgid "Line number"
+msgstr "Номер строки"
+
+msgid "Link"
+msgstr "Ссылка"
+
+msgid "Manage group"
+msgstr "Управление группой"
+
+msgid "Manage user"
+msgstr "Управление пользователем"
+
+msgid "Name"
+msgstr "Название"
+
+msgid "Navigate"
+msgstr "Перейти"
+
+msgid "New"
+msgstr "Новый"
+
+msgid "New value"
+msgstr "Новое значение"
+
+msgid "Next"
+msgstr "Далее"
+
+msgid "No data"
+msgstr "Нет данных"
+
+msgid "No results found"
+msgstr "Ничего не найдено"
+
+msgid "Non field specific"
+msgstr "Общие ошибки"
+
+msgid "Not enough data."
+msgstr "Недостаточно данных."
+
+msgid "Nothing matched your search"
+msgstr "По вашему запросу ничего не найдено"
+
+msgid "Object"
+msgstr "Объект"
+
+msgid "Object permissions"
+msgstr "Права на объект"
+
+msgid "Old value"
+msgstr "Старое значение"
+
+msgid "Open command tool"
+msgstr "Открыть командную строку"
+
+msgid "Open selection"
+msgstr "Открыть выбранное"
+
+msgid "Open selection in new tab"
+msgstr "Открыть выбранное в новой вкладке"
+
+msgid "Open shortcuts list"
+msgstr "Список сочетаний клавиш"
+
+msgid "Ordered list"
+msgstr "Нумерованный список"
+
+msgid "Paragraph"
+msgstr "Абзац"
+
+msgid ""
+"Please correct these errors in your data where possible, then reupload it "
+"using the form above."
+msgstr "Исправьте ошибки в данных и загрузите файл ещё раз через форму выше."
+
+msgid "Previous"
+msgstr "Назад"
+
+msgid "Quote"
+msgstr "Цитата"
+
+msgid "Recent searches"
+msgstr "Недавние запросы"
+
+msgid "Record picture"
+msgstr "Изображение записи"
+
+msgid "Redo"
+msgstr "Повторить"
+
+msgid "Reset filters"
+msgstr "Сбросить фильтры"
+
+msgid "Reset to default"
+msgstr "Сбросить"
+
+msgid "Return to site"
+msgstr "Вернуться на сайт"
+
+msgid "Revert"
+msgstr "Вернуть"
+
+msgid "Row"
+msgstr "Строка"
+
+msgid "Run the selected action"
+msgstr "Выполнить выбранное действие"
+
+msgid "Search apps and models..."
+msgstr "Поиск по разделам..."
+
+msgid "Select"
+msgstr "Выбрать"
+
+msgid "Select action"
+msgstr "Выберите действие"
+
+msgid "Select action to run"
+msgstr "Выберите действие"
+
+msgid "Select currency"
+msgstr "Выберите валюту"
+
+msgid "Select format"
+msgstr "Выберите формат"
+
+msgid "Select record"
+msgstr "Выберите запись"
+
+msgid "Select value"
+msgstr "Выберите значение"
+
+msgid "Skipped"
+msgstr "Пропущено"
+
+msgid "Some rows failed to validate"
+msgstr "Некоторые строки не прошли проверку"
+
+msgid "Strike"
+msgstr "Зачёркнутый"
+
+msgid "Submit"
+msgstr "Отправить"
+
+msgid "System"
+msgstr "Системная"
+
+msgid "This exporter will export the following fields"
+msgstr "Будут экспортированы следующие поля"
+
+msgid "This exporter will export the following fields: "
+msgstr "Будут экспортированы следующие поля: "
+
+msgid "This importer will import the following fields: "
+msgstr "Будут импортированы следующие поля: "
+
+msgid "This item will be deleted."
+msgstr "Этот элемент будет удалён."
+
+msgid "This object doesn't have a change history."
+msgstr "У этого объекта нет истории изменений."
+
+msgid ""
+"This page yielded into no results. Create a new item or reset your filters."
+msgstr "Записей не найдено. Создайте новую запись или сбросьте фильтры."
+
+msgid "To"
+msgstr "По"
+
+msgid "Toggle dark/light mode"
+msgstr "Переключить тему"
+
+msgid "Toggle filter"
+msgstr "Показать/скрыть фильтр"
+
+msgid "Toggle password visibility"
+msgstr "Показать/скрыть пароль"
+
+msgid "Toggle sidebar"
+msgstr "Показать/скрыть меню"
+
+msgid "True"
+msgstr "Да"
+
+msgid "Type to search"
+msgstr "Поиск"
+
+msgid "Underlined"
+msgstr "Подчёркнутый"
+
+msgid "Undo"
+msgstr "Отменить"
+
+msgid "Unlink"
+msgstr "Убрать ссылку"
+
+msgid "Unordered list"
+msgstr "Маркированный список"
+
+msgid "Update"
+msgstr "Обновить"
+
+msgid "User permissions"
+msgstr "Права пользователя"
+
+msgid "Value"
+msgstr "Значение"
+
+msgid "View traceback"
+msgstr "Показать трассировку"
+
+msgid "Welcome"
+msgstr "Добро пожаловать"
+
+msgid "Welcome back to"
+msgstr "Добро пожаловать в"
+
+#, python-format
+msgid "You are currently working on behalf of <em>%(user)s</em>."
+msgstr "Вы работаете от имени <em>%(user)s</em>."
+
+msgid "You can not create nested object without parent"
+msgstr "Нельзя создать вложенный объект без родительского"
+
+msgid "You have been successfully logged out from the administration"
+msgstr "Вы вышли из панели администратора"
+
+msgid "hide warning"
+msgstr "скрыть предупреждение"
+
+msgid "impersonate"
+msgstr "войти как пользователь"
+
+#, python-format
+msgid "impersonate %(username)s"
+msgstr "войти как %(username)s"
+
+msgid "stop impersonating"
+msgstr "выйти из режима пользователя"
