@@ -2,34 +2,134 @@
 {% load static %}
 {% block content %}
 
-<link rel="stylesheet" href="{% static 'support/css/index.css' %}?v=2">
-<div class="dashboard">
-    <div class="widget">
-        <div class="widget__title">Предстоящие встречи</div>
-        <div class="meetings-grid">
-            <a href="https://telemost.yandex.ru/j/02129986235123" target="_blank" class="call-card">
-                <svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="4" y="12" width="30" height="22" rx="6" stroke="#03A0DC" stroke-width="2"/>
-                    <path d="M34 22l14-7v22l-14-7V22z" stroke="#03A0DC" stroke-width="2" stroke-linejoin="round"/>
-                    <circle cx="16" cy="23" r="5" stroke="#03A0DC" stroke-width="2"/>
-                    <circle cx="32" cy="14" r="3" fill="#4CAF50"/>
-                </svg>
-                <p class="call-card__label">Присоединиться</p>
-                <p class="call-card__sub">Тех. поддержка</p>
-            </a>
-            <a href="https://telemost.yandex.ru/j/43380988188792" target="_blank" class="call-card">
-                <svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="4" y="12" width="30" height="22" rx="6" stroke="#03A0DC" stroke-width="2"/>
-                    <path d="M34 22l14-7v22l-14-7V22z" stroke="#03A0DC" stroke-width="2" stroke-linejoin="round"/>
-                    <circle cx="16" cy="23" r="5" stroke="#03A0DC" stroke-width="2"/>
-                    <circle cx="32" cy="14" r="3" fill="#4CAF50"/>
-                </svg>
-                <p class="call-card__label">Присоединиться</p>
-                <p class="call-card__sub">ПАО «Аэрофлот»</p>
-            </a>
+<link rel="stylesheet" href="{% static 'support/css/activity.css' %}?v=1">
+<link rel="stylesheet" href="{% static 'support/css/index.css' %}?v=3">
+<div class="home">
 
+    <section class="home-hero">
+        <div class="home-hero__text">
+            <p class="home-hero__date" data-today>{% now "d.m.Y" %}</p>
+            <h2 class="home-hero__greeting"><span data-greeting>Здравствуйте</span>, {{ greeting_name }}!</h2>
+            <p class="home-hero__sub">Все созвоны команды — в один клик. Ссылки обновляются в панели администратора.</p>
         </div>
+        {% if show_team %}
+        <a href="{% url 'profile' %}" class="home-hero__link">
+            <i class="ti ti-timeline"></i> Моя активность
+        </a>
+        {% endif %}
+    </section>
+
+    <section class="home-section">
+        <div class="home-section__head">
+            <h2 class="home-section__title">Созвоны</h2>
+            {% if is_admin %}
+            <a class="home-section__action" href="{% url 'admin:support_meetinglink_changelist' %}">
+                <i class="ti ti-settings"></i> Управлять ссылками
+            </a>
+            {% endif %}
+        </div>
+
+        <div class="meet-grid">
+            {% for m in meetings %}
+            <article class="meet-card">
+                <div class="meet-card__top">
+                    <span class="meet-card__icon"><i class="ti ti-video"></i></span>
+                    <span class="meet-card__platform">{{ m.platform }}</span>
+                </div>
+                <h3 class="meet-card__title">{{ m.title }}</h3>
+                {% if m.description %}<p class="meet-card__desc">{{ m.description }}</p>{% endif %}
+                {% if m.schedule %}
+                <p class="meet-card__schedule"><i class="ti ti-clock"></i> {{ m.schedule }}</p>
+                {% endif %}
+                <div class="meet-card__actions">
+                    <a href="{{ m.url }}" target="_blank" rel="noopener" class="meet-btn meet-btn--primary">
+                        <i class="ti ti-phone-call"></i> Подключиться
+                    </a>
+                    <button type="button" class="meet-btn meet-btn--icon" data-copy="{{ m.url }}"
+                            title="Скопировать ссылку" aria-label="Скопировать ссылку">
+                        <i class="ti ti-copy"></i>
+                    </button>
+                </div>
+            </article>
+            {% empty %}
+            <div class="home-empty">
+                <i class="ti ti-video-off"></i>
+                <span>Ссылки на созвоны пока не добавлены.
+                {% if is_admin %}<a href="{% url 'admin:support_meetinglink_add' %}">Добавить ссылку</a>{% endif %}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    {% if show_team %}
+    <div class="home-columns">
+        <section class="home-panel">
+            <h2 class="home-section__title">Активность команды</h2>
+            <ul class="team-feed">
+                {% for a in team_feed %}
+                <li class="team-feed__item">
+                    <a href="{% url 'employee_profile' a.user.username %}" class="team-feed__avatar" title="Профиль">
+                        {% if a.user.profile.photo %}
+                        <img src="{{ a.user.profile.photo.url }}" alt="">
+                        {% else %}
+                        <span>{{ a.user.profile.full_name|default:a.user.username|slice:":1"|upper }}</span>
+                        {% endif %}
+                        <i class="team-feed__badge activity-icon--{{ a.color }} ti {{ a.icon }}"></i>
+                    </a>
+                    <div class="team-feed__body">
+                        <a href="{% url 'employee_profile' a.user.username %}" class="team-feed__name">
+                            {{ a.user.profile.full_name|default:a.user.username }}
+                        </a>
+                        <div class="team-feed__text">
+                            {{ a.get_action_display }}{% if a.target %}
+                            {% if a.url %}<a href="{{ a.url }}">«{{ a.target }}»</a>{% else %}«{{ a.target }}»{% endif %}{% endif %}
+                        </div>
+                        <div class="team-feed__meta">
+                            {% if a.section %}{{ a.section }} · {% endif %}{{ a.created_at|date:"d.m.Y H:i" }}
+                        </div>
+                    </div>
+                </li>
+                {% empty %}
+                <li class="home-empty home-empty--plain">
+                    <i class="ti ti-timeline"></i>
+                    <span>Здесь появятся правки статей, ознакомления и пройденные проверки знаний.</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </section>
+
+        <section class="home-panel">
+            <h2 class="home-section__title">Ближайшие дни рождения</h2>
+            <ul class="bday-list">
+                {% for b in birthdays %}
+                <li class="bday-item{% if b.today %} bday-item--today{% endif %}">
+                    <a href="{% url 'employee_profile' b.profile.user.username %}" class="bday-item__avatar">
+                        {% if b.profile.photo %}
+                        <img src="{{ b.profile.photo.url }}" alt="">
+                        {% else %}
+                        <span>{{ b.profile.full_name|default:b.profile.user.username|slice:":1"|upper }}</span>
+                        {% endif %}
+                    </a>
+                    <div class="bday-item__body">
+                        <span class="bday-item__name">{{ b.profile.full_name|default:b.profile.user.username }}</span>
+                        <span class="bday-item__date">{{ b.date }}</span>
+                    </div>
+                    <span class="bday-item__when">
+                        {% if b.today %}<i class="ti ti-cake"></i> {% endif %}{{ b.when }}
+                    </span>
+                </li>
+                {% empty %}
+                <li class="home-empty home-empty--plain">
+                    <i class="ti ti-cake"></i>
+                    <span>В ближайшие 30 дней дней рождения нет.</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </section>
     </div>
+    {% endif %}
 </div>
+
+<script src="{% static 'support/js/index.js' %}"></script>
 
 {% endblock %}

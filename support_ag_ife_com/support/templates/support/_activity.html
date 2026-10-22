@@ -1,0 +1,74 @@
+{# История активности: календарь «как в GitLab» + последние действия. Нужны calendar, stats, activities #}
+<div class="activity-card">
+    <div class="activity-card__head">
+        <div class="activity-card__title">Активность</div>
+        <div class="activity-stats">
+            <div class="activity-stat">
+                <span class="activity-stat__value">{{ stats.year_total }}</span>
+                <span class="activity-stat__label">за год</span>
+            </div>
+            <div class="activity-stat">
+                <span class="activity-stat__value">{{ stats.month_total }}</span>
+                <span class="activity-stat__label">за 30 дней</span>
+            </div>
+            <div class="activity-stat">
+                <span class="activity-stat__value">{{ stats.streak }}</span>
+                <span class="activity-stat__label">{{ stats.streak_word }} подряд</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="heatmap-scroll" data-heatmap-scroll>
+        <div class="heatmap">
+            {% for m in calendar.months %}
+            <span class="heatmap__month" style="grid-column: {{ m.col }}">{{ m.label }}</span>
+            {% endfor %}
+            <span class="heatmap__weekday" style="grid-row: 2">Пн</span>
+            <span class="heatmap__weekday" style="grid-row: 4">Ср</span>
+            <span class="heatmap__weekday" style="grid-row: 6">Пт</span>
+            {% for week in calendar.weeks %}{% for day in week %}{% if day %}
+            <span class="heatmap__cell lvl-{{ day.level }}"
+                  style="grid-column: {{ forloop.parentloop.counter|add:1 }}; grid-row: {{ forloop.counter|add:1 }}"
+                  title="{{ day.title }}"></span>
+            {% endif %}{% endfor %}{% endfor %}
+        </div>
+    </div>
+
+    <div class="heatmap-footer">
+        <div class="heatmap-legend">
+            <span>Меньше</span>
+            <span class="heatmap__cell lvl-0"></span>
+            <span class="heatmap__cell lvl-1"></span>
+            <span class="heatmap__cell lvl-2"></span>
+            <span class="heatmap__cell lvl-3"></span>
+            <span class="heatmap__cell lvl-4"></span>
+            <span>Больше</span>
+        </div>
+        <span class="heatmap-note">Статьи, ознакомления, проверки знаний и график дежурств</span>
+    </div>
+</div>
+
+<div class="activity-card">
+    <div class="activity-card__title">Последние действия</div>
+    <ul class="activity-feed">
+        {% for a in activities %}
+        <li class="activity-item">
+            <span class="activity-icon activity-icon--{{ a.color }}"><i class="ti {{ a.icon }}"></i></span>
+            <div class="activity-item__body">
+                <div class="activity-item__text">
+                    {{ a.get_action_display }}{% if a.target %}
+                    {% if a.url %}<a href="{{ a.url }}">«{{ a.target }}»</a>{% else %}«{{ a.target }}»{% endif %}{% endif %}
+                </div>
+                <div class="activity-item__meta">
+                    {% if a.section %}{{ a.section }} · {% endif %}{{ a.created_at|date:"d.m.Y H:i" }}
+                </div>
+            </div>
+        </li>
+        {% empty %}
+        <li class="activity-empty">
+            <i class="ti ti-timeline"></i>
+            Пока нет действий. Здесь появятся правки статей, ознакомления и пройденные проверки знаний.
+        </li>
+        {% endfor %}
+    </ul>
+</div>

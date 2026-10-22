@@ -1,81 +1,459 @@
-.dashboard {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-    padding: 1rem 1.5rem;
-}
+/* Главная страница: приветствие, созвоны, активность команды, дни рождения */
 
-.widget {
+.home {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 28px;
+    padding: 1rem 1.5rem 2rem;
 }
 
-.widget__title {
-    font-size: 15px;
-    font-weight: 500;
-    color: #263238;
-    border: 1px solid #e0e0e0;
-    border-radius: 12px;
-    padding: 14px 20px;
-    text-align: center;
-}
-
-.meetings-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    flex: 1;
-}
-
-.call-card {
-    text-decoration: none;
-    background: #f5f5f5;
-    border-radius: 20px;
-    padding: 2rem 1rem;
+/* ── Приветствие ── */
+.home-hero {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 10px;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 28px 32px;
+    border-radius: 20px;
+    color: #fff;
+    background:
+        radial-gradient(circle at 92% 18%, rgba(255, 255, 255, 0.18) 0, rgba(255, 255, 255, 0) 38%),
+        linear-gradient(120deg, #0384b6 0%, #03a0dc 55%, #37b9e7 100%);
+    box-shadow: 0 10px 30px rgba(3, 160, 220, 0.22);
+}
+
+.home-hero__date {
+    margin: 0 0 6px;
+    font-size: 13px;
+    opacity: 0.85;
+}
+
+.home-hero__greeting {
+    margin: 0 0 6px;
+    font-size: clamp(20px, 2.2vw, 28px);
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.home-hero__sub {
+    margin: 0;
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.home-hero__link {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
     transition: background 0.15s;
 }
 
-.call-card:hover {
-    background: #e3f6fd;
+.home-hero__link:hover {
+    background: rgba(255, 255, 255, 0.28);
 }
 
-.call-card__label {
-    font-size: 15px;
-    font-weight: 500;
+/* ── Заголовки секций ── */
+.home-section__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.home-section__title {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 600;
     color: #263238;
-    margin: 0;
 }
 
-.call-card__sub {
-    font-size: 12px;
-    color: #90A4AE;
-    margin: 0;
+.home-section__action {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #03A0DC;
+    text-decoration: none;
 }
 
-.birthday-card {
-    background: #fff;
-    border: 1px solid #e0e0e0;
-    border-radius: 12px;
-    padding: 1.25rem;
+.home-section__action:hover {
+    text-decoration: underline;
+}
+
+/* ── Карточки созвонов ── */
+.meet-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+}
+
+.meet-card {
+    position: relative;
     display: flex;
     flex-direction: column;
+    gap: 6px;
+    padding: 20px;
+    background: #fff;
+    border: 1px solid #e6eaec;
+    border-radius: 18px;
+    transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s;
+}
+
+.meet-card:hover {
+    border-color: #cdeef9;
+    box-shadow: 0 12px 28px rgba(38, 50, 56, 0.08);
+    transform: translateY(-2px);
+}
+
+.meet-card__top {
+    display: flex;
+    align-items: center;
     justify-content: space-between;
-    flex: 1;
+    margin-bottom: 8px;
 }
 
-.birthday-item {
-    font-size: 14px;
+.meet-card__icon {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #e3f6fd;
+    color: #03A0DC;
+    font-size: 24px;
+}
+
+/* «В эфире» — зелёная точка, как на старой иконке */
+.meet-card__icon::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #4CAF50;
+    border: 2px solid #fff;
+}
+
+.meet-card__platform {
+    font-size: 12px;
+    color: #78909C;
+    background: #f3f5f6;
+    padding: 4px 10px;
+    border-radius: 20px;
+}
+
+.meet-card__title {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 600;
+    color: #263238;
+}
+
+.meet-card__desc {
+    margin: 0;
+    font-size: 13px;
     color: #607D8B;
-    padding: 10px 0;
-    border-bottom: 1px solid #f0f0f0;
 }
 
-.birthday-item:last-child {
+.meet-card__schedule {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    font-size: 13px;
+    color: #607D8B;
+}
+
+.meet-card__actions {
+    display: flex;
+    gap: 8px;
+    margin-top: auto;
+    padding-top: 14px;
+}
+
+.meet-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 42px;
+    border-radius: 12px;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.meet-btn--primary {
+    flex: 1;
+    background: #03A0DC;
+    color: #fff;
+    border: none;
+}
+
+.meet-btn--primary:hover {
+    background: #0384b6;
+}
+
+.meet-btn--icon {
+    width: 42px;
+    flex-shrink: 0;
+    background: #fff;
+    color: #607D8B;
+    border: 1px solid #e0e0e0;
+    font-size: 18px;
+}
+
+.meet-btn--icon:hover {
+    color: #03A0DC;
+    border-color: #03A0DC;
+}
+
+.meet-btn--icon.copied {
+    color: #1e8e5a;
+    border-color: #1e8e5a;
+}
+
+/* ── Пустые состояния ── */
+.home-empty {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 20px;
+    border: 1px dashed #cfd8dc;
+    border-radius: 16px;
+    font-size: 14px;
+    color: #90A4AE;
+}
+
+.home-empty .ti {
+    font-size: 22px;
+}
+
+.home-empty a {
+    color: #03A0DC;
+}
+
+.home-empty--plain {
+    border: none;
+    padding: 8px 0;
+}
+
+/* ── Нижние панели ── */
+.home-columns {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    gap: 20px;
+    align-items: start;
+}
+
+.home-panel {
+    background: #fff;
+    border: 1px solid #e6eaec;
+    border-radius: 18px;
+    padding: 20px 22px;
+}
+
+.home-panel .home-section__title {
+    margin-bottom: 10px;
+}
+
+/* Лента команды */
+.team-feed,
+.bday-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.team-feed__item {
+    display: flex;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #f2f4f5;
+}
+
+.team-feed__item:last-child {
     border-bottom: none;
+    padding-bottom: 0;
+}
+
+.team-feed__avatar,
+.bday-item__avatar {
+    position: relative;
+    flex-shrink: 0;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    text-decoration: none;
+}
+
+.team-feed__avatar img,
+.team-feed__avatar span,
+.bday-item__avatar img,
+.bday-item__avatar span {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #03a0dc;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.team-feed__badge {
+    position: absolute;
+    right: -4px;
+    bottom: -4px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+}
+
+.team-feed__body {
+    min-width: 0;
+}
+
+.team-feed__name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #263238;
+    text-decoration: none;
+}
+
+.team-feed__name:hover {
+    color: #03A0DC;
+}
+
+.team-feed__text {
+    font-size: 13px;
+    color: #455A64;
+    overflow-wrap: anywhere;
+}
+
+.team-feed__text a {
+    color: #03A0DC;
+    text-decoration: none;
+}
+
+.team-feed__text a:hover {
+    text-decoration: underline;
+}
+
+.team-feed__meta {
+    font-size: 12px;
+    color: #90A4AE;
+    margin-top: 2px;
+}
+
+/* Дни рождения */
+.bday-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f2f4f5;
+}
+
+.bday-item:last-child {
+    border-bottom: none;
+}
+
+.bday-item__body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.bday-item__name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #263238;
+}
+
+.bday-item__date {
+    font-size: 12px;
+    color: #90A4AE;
+}
+
+.bday-item__when {
+    flex-shrink: 0;
+    font-size: 12px;
+    color: #607D8B;
+    background: #f3f5f6;
+    padding: 4px 10px;
+    border-radius: 20px;
+}
+
+.bday-item--today .bday-item__when {
+    background: #fff2e2;
+    color: #c06a0a;
+    font-weight: 500;
+}
+
+@media (max-width: 1100px) {
+    .home-columns {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 599px) {
+    .home {
+        gap: 20px;
+        padding: 0;
+    }
+
+    .home-hero {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 20px;
+        border-radius: 18px;
+    }
+
+    .home-hero__link {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .meet-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .meet-btn {
+        height: 48px;
+    }
+
+    .meet-btn--icon {
+        width: 48px;
+    }
+
+    .home-panel {
+        padding: 16px;
+    }
 }

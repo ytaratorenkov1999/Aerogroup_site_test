@@ -3,10 +3,24 @@
     const defaultAvatar = page.dataset.defaultAvatar;
     const toastMessage  = page.dataset.toastMessage;
 
+    // Вкладки «Активность» / «Личные данные»
+    const tabs   = page.querySelectorAll('.profile-tab');
+    const panels = page.querySelectorAll('.profile-panel');
+
+    function openTab(name) {
+        tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+        panels.forEach(p => { p.hidden = p.dataset.panel !== name; });
+        if (name === 'activity' && window.scrollHeatmapToEnd) window.scrollHeatmapToEnd();
+    }
+
+    tabs.forEach(t => t.addEventListener('click', () => openTab(t.dataset.tab)));
+    if (location.hash === '#settings' || toastMessage) openTab('settings');
+
     // Предпросмотр фото при выборе файла
     document.getElementById('photoInput').addEventListener('change', function () {
         const file = this.files[0];
         if (!file) return;
+        openTab('settings');  // чтобы была видна кнопка «Сохранить»
         const reader = new FileReader();
         reader.onload = e => {
             document.getElementById('photoPreview').src = e.target.result;
@@ -20,6 +34,7 @@
         deleteBtn.addEventListener('click', function () {
             document.getElementById('deletePhotoInput').value = '1';
             document.getElementById('photoPreview').src = defaultAvatar;
+            openTab('settings');
             this.remove();
         });
     }

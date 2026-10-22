@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 from .roles import ROLE_CHOICES
 
@@ -78,3 +79,102 @@ class Employee(User):
         proxy = True
         verbose_name = 'Сотрудник'
         verbose_name_plural = 'Сотрудники'
+
+
+class MeetingLink(models.Model):
+    """Ссылка на созвон — карточка «Подключиться» на главной странице"""
+    title       = models.CharField(max_length=150, verbose_name='Название')
+    description = models.CharField(
+                      max_length=255, blank=True, verbose_name='Описание',
+                      help_text='Короткая подпись под названием, например «Ежедневная планёрка»',
+                  )
+    url         = models.URLField(max_length=500, verbose_name='Ссылка на созвон')
+    schedule    = models.CharField(
+                      max_length=100, blank=True, verbose_name='Расписание',
+                      help_text='Например «Пн–Пт, 10:00». Показывается на карточке',
+                  )
+    order       = models.PositiveIntegerField(default=0, verbose_name='Порядок')
+    is_active   = models.BooleanField(
+                      default=True, verbose_name='Показывать на главной',
+                      help_text='Снимите галочку, чтобы скрыть ссылку, не удаляя её',
+                  )
+    created_at  = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
+    updated_at  = models.DateTimeField(auto_now=True, verbose_name='Дата обновления')
+
+    # Площадка определяется по домену ссылки: (подстрока домена, название)
+    PLATFORMS = [
+        ('telemost.yandex', 'Яндекс Телемост'),
+        ('zoom.us',         'Zoom'),
+        ('teams.microsoft', 'Microsoft Teams'),
+        ('teams.live',      'Microsoft Teams'),
+        ('meet.google',     'Google Meet'),
+        ('vk.com/call',     'VK Звонки'),
+        ('jazz.sber',       'SberJazz'),
+        ('ktalk',           'Контур.Толк'),
+        ('webinar.ru',      'МТС Линк'),
+        ('mts-link',        'МТС Линк'),
+    ]
+
+    class Meta:
+        verbose_name        = 'Ссылка на созвон'
+        verbose_name_plural = 'Ссылки на созвоны'
+        ordering            = ['order', 'title']
+
+    def __str__(self):
+        return self.title
+
+    @property
+    def platform(self):
+        url = self.url.lower()
+        for needle, name in self.PLATFORMS:
+            if needle in url:
+                return name
+        return 'Видеозвонок'
+
+
+class UserActivity(models.Model):
+    """Действие сотрудника на сайте — из них строится история активности в профиле"""
+    ARTICLE_CREATED      = 'article_created'
+    ARTICLE_EDITED       = 'article_edited'
+    ARTICLE_DELETED      = 'article_deleted'
+    ARTICLE_ACKNOWLEDGED = 'article_acknowledged'
+    CATEGORY_CREATED     = 'category_created'
+    CATEGORY_EDITED      = 'category_edited'
+    CATEGORY_DELETED     = 'category_deleted'
+    QUIZ_COMPLETED       = 'quiz_completed'
+    SCHEDULE_EDITED      = 'schedule_edited'
+    SCHEDULE_IMPORTED    = 'schedule_imported'
+    PROFILE_UPDATED      = 'profile_updated'
+
+    ACTION_CHOICES = [
+        (ARTICLE_CREATED,      'Создана статья'),
+        (ARTICLE_EDITED,       'Отредактирована статья'),
+        (ARTICLE_DELETED,      'Удалена статья'),
+        (ARTICLE_ACKNOWLEDGED, 'Ознакомление со статьёй'),
+        (CATEGORY_CREATED,     'Создана категория'),
+        (CATEGORY_EDITED,      'Отредактирована категория'),
+        (CATEGORY_DELETED,     'Удалена категория'),
+        (QUIZ_COMPLETED,       'Пройдена проверка знаний'),
+        (SCHEDULE_EDITED,      'Изменён график дежурств'),
+        (SCHEDULE_IMPORTED,    'Загружен график дежурств'),
+        (PROFILE_UPDATED,      'Обновлён профиль'),
+    ]
+
+    user       = models.ForeignKey(
+                     User, on_delete=models.CASCADE,
+                     related_name='activities', verbose_name='Сотрудник'
+                 )
+    action     = models.CharField(max_length=30, choices=ACTION_CHOICES, verbose_name='Действие')
+    section    = models.CharField(max_length=100, blank=True, verbose_name='Раздел')
+    target     = models.CharField(max_length=255, blank=True, verbose_name='Объект')
+    url        = models.CharField(max_length=500, blank=True, verbose_name='Ссылка')
+    created_at = models.DateTimeField(default=timezone.now, db_index=True, verbose_name='Дата')
+
+    class Meta:
+        verbose_name        = 'Действие сотрудника'
+        verbose_name_plural = 'Активность сотрудников'
+        ordering            = ['-created_at']
+        indexes             = [models.Index(fields=['user', 'created_at'])]
+
+    def __str__(self):
+        return f'{self.user.username}: {self.get_action_display()} {self.target}'.strip()

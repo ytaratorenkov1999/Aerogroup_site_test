@@ -232,6 +232,13 @@ UNFOLD = {
                     {'title': 'Сотрудники', 'icon': 'badge',                'link': _admin_link('support_employee')},
                     {'title': 'Отделы',     'icon': 'apartment',            'link': _admin_link('support_department')},
                     {'title': 'Роли',       'icon': 'admin_panel_settings', 'link': _admin_link('support_role')},
+                    {'title': 'Активность', 'icon': 'timeline',             'link': _admin_link('support_useractivity')},
+                ],
+            },
+            {
+                'title': 'Главная страница',
+                'items': [
+                    {'title': 'Ссылки на созвоны', 'icon': 'video_call', 'link': _admin_link('support_meetinglink')},
                 ],
             },
             {

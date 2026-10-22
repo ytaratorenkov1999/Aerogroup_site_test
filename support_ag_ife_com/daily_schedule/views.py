@@ -2,11 +2,13 @@ import json
 import logging
 
 from django.shortcuts import render
+from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 
-from support.models import EmployeeProfile, Department
+from support.activity import log_activity
+from support.models import EmployeeProfile, Department, UserActivity
 from support.roles import role_required, ROLE_ADMIN, ROLE_MANAGER
 from .models import DailyTable
 from .export_to_excel_daily import import_schedule_from_xlsx
@@ -102,6 +104,9 @@ def save_entry(request):
     else:
         DailyTable.objects.filter(employee=employee, date=date).delete()
 
+    # Правки идут по одной клетке — в историю пишем не чаще раза в 30 минут
+    log_activity(request.user, UserActivity.SCHEDULE_EDITED, date.strftime('%m.%Y'),
+                 'График дежурств', reverse('schedule'), dedupe_minutes=30)
     return JsonResponse({'success': True})
 
 
@@ -115,4 +120,7 @@ def import_schedule(request):
         return JsonResponse({'success': False, 'error': 'Файл не передан'})
 
     result = import_schedule_from_xlsx(uploaded, uploaded_by=request.user.username)
+    if result.get('success'):
+        log_activity(request.user, UserActivity.SCHEDULE_IMPORTED, uploaded.name,
+                     'График дежурств', reverse('schedule'))
     return JsonResponse(result)
