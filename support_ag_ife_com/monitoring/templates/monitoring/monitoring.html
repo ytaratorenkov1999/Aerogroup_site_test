@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Мониторинг узлов</title>
+<style>
+  :root{
+    --bg:#0f141b;
+    --panel:#161d27;
+    --panel-2:#1c2531;
+    --border:#26313f;
+    --text:#e6edf5;
+    --muted:#8395a9;
+    --green:#2ecc71;
+    --red:#ff4d4f;
+    --yellow:#f5a623;
+    --accent:#3b82f6;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    min-height:100vh;
+  }
+
+  /* ---------- Шапка ---------- */
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:16px;flex-wrap:wrap;
+    padding:22px 28px 14px;
+    border-bottom:1px solid var(--border);
+  }
+  .topbar h1{margin:0;font-size:19px;font-weight:600;letter-spacing:.3px}
+  .sub{font-size:12px;color:var(--muted);margin-top:5px}
+  .stats{display:flex;gap:10px;flex-wrap:wrap;margin-left:auto;margin-right:14px}
+  .stat{
+    display:flex;align-items:center;gap:7px;
+    background:var(--panel);border:1px solid var(--border);
+    border-radius:20px;padding:5px 13px;font-size:12px;color:var(--muted);
+  }
+  .stat b{color:var(--text);font-weight:600}
+  .stat .d{width:8px;height:8px;border-radius:50%}
+  .d.g{background:var(--green)} .d.r{background:var(--red)}
+  .btn{
+    background:var(--panel-2);color:var(--text);
+    border:1px solid var(--border);border-radius:9px;
+    padding:9px 16px;font-size:13px;cursor:pointer;transition:.15s;
+  }
+  .btn:hover{background:#233040;border-color:#3a4a5f}
+
+  /* ---------- Сетка карточек ---------- */
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(210px,1fr));
+    gap:16px;
+    padding:24px 28px 40px;
+  }
+  .card{
+    position:relative;
+    min-height:132px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:26px 16px 18px;
+    background:linear-gradient(160deg,var(--panel-2),var(--panel));
+    border:1px solid var(--border);
+    border-radius:14px;
+    cursor:pointer;
+    transition:transform .16s, border-color .16s, box-shadow .16s;
+    user-select:none;
+  }
+  .card:hover{transform:translateY(-3px);border-color:#3a4a5f;box-shadow:0 12px 26px rgba(0,0,0,.45)}
+  .card .ip{
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:20px;font-weight:600;letter-spacing:.6px;
+  }
+  .card .name{
+    margin-top:8px;font-size:11.5px;color:var(--muted);
+    letter-spacing:1px;text-transform:uppercase;
+  }
+  .dot{
+    position:absolute;top:13px;right:13px;
+    width:10px;height:10px;border-radius:50%;
+  }
+  .dot.on{background:var(--green);box-shadow:0 0 0 3px rgba(46,204,113,.14),0 0 10px rgba(46,204,113,.75)}
+  .dot.off{background:var(--red);box-shadow:0 0 0 3px rgba(255,77,79,.14),0 0 10px rgba(255,77,79,.75)}
+  .card.offline{opacity:.72}
+
+  /* ---------- Модальное окно ---------- */
+  .overlay{
+    position:fixed;inset:0;background:rgba(6,10,15,.72);
+    backdrop-filter:blur(3px);
+    display:none;align-items:flex-start;justify-content:center;
+    padding:40px 16px;overflow-y:auto;z-index:50;
+  }
+  .overlay.show{display:flex}
+  .modal{
+    width:100%;max-width:720px;
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:16px;
+    box-shadow:0 30px 70px rgba(0,0,0,.6);
+    animation:pop .18s ease-out;
+  }
+  @keyframes pop{from{transform:translateY(10px) scale(.985);opacity:0}to{transform:none;opacity:1}}
+
+  .m-head{
+    display:flex;align-items:flex-start;justify-content:space-between;gap:14px;
+    padding:22px 24px 18px;border-bottom:1px solid var(--border);
+  }
+  .m-ip{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:22px;font-weight:700;letter-spacing:.6px}
+  .m-name{font-size:12.5px;color:var(--muted);margin-top:6px;letter-spacing:1px;text-transform:uppercase}
+  .m-right{display:flex;align-items:center;gap:10px}
+  .pill{
+    font-size:12px;font-weight:600;padding:5px 12px;border-radius:20px;white-space:nowrap;
+  }
+  .pill.on{background:rgba(46,204,113,.14);color:var(--green)}
+  .pill.off{background:rgba(255,77,79,.14);color:var(--red)}
+  .close{
+    background:transparent;border:none;color:var(--muted);
+    font-size:24px;line-height:1;cursor:pointer;padding:2px 6px;border-radius:6px;transition:.15s;
+  }
+  .close:hover{color:var(--text);background:var(--panel-2)}
+
+  .m-body{padding:6px 24px 26px}
+  .section{margin-top:20px}
+  .section h4{
+    margin:0 0 11px;font-size:11.5px;font-weight:600;
+    letter-spacing:1px;text-transform:uppercase;color:var(--muted);
+  }
+
+  /* потоки */
+  .chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:8px}
+  .chip{
+    display:flex;align-items:center;gap:9px;
+    background:var(--panel-2);border:1px solid var(--border);
+    border-radius:9px;padding:9px 12px;font-size:13px;
+  }
+  .chip .d{width:8px;height:8px;border-radius:50%;flex:none}
+
+  /* отчёты */
+  .rep{display:grid;grid-template-columns:96px 1fr 62px;align-items:center;gap:12px;margin-bottom:9px;font-size:13px}
+  .rep .lbl{color:var(--muted)}
+  .rep .cnt{text-align:right;font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:600}
+  .bar{height:6px;background:#0d131a;border-radius:4px;overflow:hidden}
+  .bar > i{display:block;height:100%;background:var(--accent);border-radius:4px;transition:width .3s}
+
+  /* диск */
+  .disk-top{display:flex;justify-content:space-between;font-size:13px;margin-bottom:9px}
+  .disk-top .muted{color:var(--muted)}
+  .disk-bar{height:10px;background:#0d131a;border-radius:6px;overflow:hidden}
+  .disk-bar > i{display:block;height:100%;border-radius:6px;transition:width .3s}
+
+  /* контейнеры */
+  .cont{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:10px 13px;border:1px solid var(--border);border-radius:9px;
+    margin-bottom:7px;font-size:13px;background:var(--panel-2);
+  }
+  .cont .cname{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px}
+  .badge{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;letter-spacing:.4px}
+  .badge.ok{background:rgba(46,204,113,.14);color:var(--green)}
+  .badge.bad{background:rgba(255,77,79,.14);color:var(--red)}
+  .badge.warn{background:rgba(245,166,35,.14);color:var(--yellow)}
+
+  @media(max-width:520px){
+    .topbar{padding:18px 16px 12px}
+    .grid{padding:18px 16px 32px;gap:12px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+    .m-head,.m-body{padding-left:16px;padding-right:16px}
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div>
+    <h1>Мониторинг узлов</h1>
+    <div class="sub">Обновлено: <span id="ts">—</span></div>
+  </div>
+  <div class="stats" id="stats"></div>
+  <button class="btn" id="refresh">Обновить</button>
+</header>
+
+<main class="grid" id="grid"></main>
+
+<div class="overlay" id="overlay">
+  <div class="modal" id="modal"></div>
+</div>
+
+<script>
+/* ======================= ДАННЫЕ (демо) ======================= */
+const machines = [
+  {
+    ip:'10.14.2.11', name:'asu-node-01', online:true,
+    streams:{passengers:true,catering:true,skyshop:true,schedule:true,crew:true,mail:true},
+    reports:[{name:'Путь 1',count:1240},{name:'Путь 2',count:86},{name:'Путь 3',count:0},{name:'Путь 4',count:412}],
+    disk:{used:318,total:500},
+    containers:[
+      {name:'asu-core',status:'running'},
+      {name:'asu-gateway',status:'running'},
+      {name:'asu-reports',status:'running'},
+      {name:'asu-mail',status:'running'}
+    ]
+  },
+  {
+    ip:'10.14.2.12', name:'asu-node-02', online:true,
+    streams:{passengers:true,catering:true,skyshop:false,schedule:true,crew:true,mail:false},
+    reports:[{name:'Путь 1',count:980},{name:'Путь 2',count:154},{name:'Путь 3',count:12},{name:'Путь 4',count:0}],
+    disk:{used:462,total:500},
+    containers:[
+      {name:'asu-core',status:'running'},
+      {name:'asu-gateway',status:'running'},
+      {name:'asu-reports',status:'restarting'},
+      {name:'asu-mail',status:'exited'}
+    ]
+  },
+  {
+    ip:'10.14.2.13', name:'asu-node-03', online:false,
+    streams:{passengers:false,catering:false,skyshop:false,schedule:false,crew:false,mail:false},
+    reports:[{name:'Путь 1',count:0},{name:'Путь 2',count:0},{name:'Путь 3',count:0},{name:'Путь 4',count:0}],
+    disk:{used:205,total:500},
+    containers:[
+      {name:'asu-core',status:'exited'},
+      {name:'asu-gateway',status:'exited'},
+      {name:'asu-reports',status:'exited'},
+      {name:'asu-mail',status:'exited'}
+    ]
+  },
+  {
+    ip:'10.14.3.21', name:'asu-node-04', online:true,
+    streams:{passengers:true,catering:true,skyshop:true,schedule:true,crew:true,mail:true},
+    reports:[{name:'Путь 1',count:2310},{name:'Путь 2',count:420},{name:'Путь 3',count:310},{name:'Путь 4',count:1180}],
+    disk:{used:120,total:1000},
+    containers:[
+      {name:'asu-core',status:'running'},
+      {name:'asu-gateway',status:'running'},
+      {name:'asu-reports',status:'running'},
+      {name:'asu-mail',status:'running'}
+    ]
+  },
+  {
+    ip:'10.14.3.22', name:'asu-node-05', online:true,
+    streams:{passengers:true,catering:true,skyshop:true,schedule:false,crew:true,mail:true},
+    reports:[{name:'Путь 1',count:640},{name:'Путь 2',count:75},{name:'Путь 3',count:140},{name:'Путь 4',count:22}],
+    disk:{used:640,total:1000},
+    containers:[
+      {name:'asu-core',status:'running'},
+      {name:'asu-gateway',status:'running'},
+      {name:'asu-reports',status:'running'},
+      {name:'asu-mail',status:'running'}
+    ]
+  },
+  {
+    ip:'10.14.3.23', name:'asu-node-06', online:true,
+    streams:{passengers:false,catering:true,skyshop:true,schedule:true,crew:false,mail:true},
+    reports:[{name:'Путь 1',count:1120},{name:'Путь 2',count:203},{name:'Путь 3',count:0},{name:'Путь 4',count:530}],
+    disk:{used:910,total:1000},
+    containers:[
+      {name:'asu-core',status:'running'},
+      {name:'asu-gateway',status:'running'},
+      {name:'asu-reports',status:'running'},
+      {name:'asu-mail',status:'exited'}
+    ]
+  },
+  {
+    ip:'10.15.1.10', name:'asu-node-07', online:false,
+    streams:{passengers:false,catering:false,skyshop:false,schedule:false,crew:false,mail:false},
+    reports:[{name:'Путь 1',count:0},{name:'Путь 2',count:0},{name:'Путь 3',count:0},{name:'Путь 4',count:0}],
+    disk:{used:60,total:250},
+    containers:[
+      {name:'asu-core',status:'exited'},
+      {name:'asu-gateway',status:'exited'},
+      {name:'asu-reports',status:'exited'},
+      {name:'asu-mail',status:'exited'}
+    ]
+  },
+  {
+    ip:'10.15.1.11', name:'asu-node-08', online:true,
+    streams:{passengers:true,catering:true,skyshop:true,schedule:true,crew:true,mail:true},
+    reports:[{name:'Путь 1',count:310},{name:'Путь 2',count:48},{name:'Путь 3',count:5},{name:'Путь 4',count:96}],
+    disk:{used:88,total:250},
+    containers:[
+      {name:'asu-core',status:'running'},
+      {name:'asu-gateway',status:'running'},
+      {name:'asu-reports',status:'running'},
+      {name:'asu-mail',status:'running'}
+    ]
+  },
+  {
+    ip:'10.15.1.12', name:'asu-node-09', online:true,
+    streams:{passengers:true,catering:false,skyshop:true,schedule:true,crew:true,mail:true},
+    reports:[{name:'Путь 1',count:760},{name:'Путь 2',count:0},{name:'Путь 3',count:64},{name:'Путь 4',count:210}],
+    disk:{used:210,total:500},
+    containers:[
+      {name:'asu-core',status:'running'},
+      {name:'asu-gateway',status:'restarting'},
+      {name:'asu-reports',status:'running'},
+      {name:'asu-mail',status:'running'}
+    ]
+  }
+];
+
+/* ======================= РЕНДЕР КАРТОЧЕК ======================= */
+const grid    = document.getElementById('grid');
+const overlay = document.getElementById('overlay');
+const modal   = document.getElementById('modal');
+const tsEl    = document.getElementById('ts');
+const statsEl = document.getElementById('stats');
+
+function renderStats(){
+  const total = machines.length;
+  const on    = machines.filter(m => m.online).length;
+  statsEl.innerHTML = `
+    <div class="stat">Всего: <b>${total}</b></div>
+    <div class="stat"><span class="d g"></span>Онлайн: <b>${on}</b></div>
+    <div class="stat"><span class="d r"></span>Офлайн: <b>${total - on}</b></div>
+  `;
+}
+
+function renderCards(){
+  grid.innerHTML = machines.map((m, i) => `
+    <div class="card ${m.online ? '' : 'offline'}" data-i="${i}">
+      <span class="dot ${m.online ? 'on' : 'off'}"></span>
+      <div class="ip">${m.ip}</div>
+      <div class="name">${m.name}</div>
+    </div>
+  `).join('');
+}
+
+function renderTimestamp(){
+  tsEl.textContent = new Date().toLocaleTimeString('ru-RU');
+}
+
+/* ======================= МОДАЛЬНОЕ ОКНО ======================= */
+const STREAM_LABELS = [
+  ['passengers', 'Пассажиры'],
+  ['catering',   'Кейтеринг'],
+  ['skyshop',    'Скайшоп'],
+  ['schedule',   'Расписание'],
+  ['crew',       'Экипаж'],
+  ['mail',       'Почта АК']
+];
+
+const CONT_STATUS = {
+  running:    { label:'running',    cls:'ok'   },
+  exited:     { label:'exited',     cls:'bad'  },
+  restarting: { label:'restarting', cls:'warn' }
+};
+
+function openModal(m){
+  const maxRep = Math.max(1, ...m.reports.map(r => r.count));
+  const pct    = Math.round(m.disk.used / m.disk.total * 100);
+  const barCol = pct >= 90 ? 'var(--red)' : pct >= 70 ? 'var(--yellow)' : 'var(--green)';
+
+  const streamsHtml = STREAM_LABELS.map(([key, label]) => {
+    const ok = !!m.streams[key];
+    return `<div class="chip">
+      <span class="d" style="background:${ok ? 'var(--green)' : 'var(--red)'}"></span>
+      ${label}
+    </div>`;
+  }).join('');
+
+  const reportsHtml = m.reports.map(r => {
+    const w = Math.round(r.count / maxRep * 100);
+    return `<div class="rep">
+      <span class="lbl">${r.name}</span>
+      <span class="bar"><i style="width:${w}%"></i></span>
+      <span class="cnt">${r.count}</span>
+    </div>`;
+  }).join('');
+
+  const contHtml = m.containers.map(c => {
+    const st = CONT_STATUS[c.status] || { label:c.status, cls:'warn' };
+    return `<div class="cont">
+      <span class="cname">${c.name}</span>
+      <span class="badge ${st.cls}">${st.label}</span>
+    </div>`;
+  }).join('');
+
+  modal.innerHTML = `
+    <div class="m-head">
+      <div>
+        <div class="m-ip">${m.ip}</div>
+        <div class="m-name">${m.name}</div>
+      </div>
+      <div class="m-right">
+        <span class="pill ${m.online ? 'on' : 'off'}">
+          ${m.online ? 'Связанность: OK' : 'Связанность: НЕТ'}
+        </span>
+        <button class="close" id="closeBtn" title="Закрыть">&times;</button>
+      </div>
+    </div>
+
+    <div class="m-body">
+
+      <div class="section">
+        <h4>Сетевая связанность потоков</h4>
+        <div class="chips">${streamsHtml}</div>
+      </div>
+
+      <div class="section">
+        <h4>Отчёты в ИШП</h4>
+        ${reportsHtml}
+      </div>
+
+      <div class="section">
+        <h4>Место на машине</h4>
+        <div class="disk-top">
+          <span>${m.disk.used} ГБ / ${m.disk.total} ГБ</span>
+          <span class="muted">${pct}% занято</span>
+        </div>
+        <div class="disk-bar"><i style="width:${pct}%;background:${barCol}"></i></div>
+      </div>
+
+      <div class="section">
+        <h4>Статус контейнеров</h4>
+        ${contHtml}
+      </div>
+
+    </div>
+  `;
+
+  overlay.classList.add('show');
+  document.body.style.overflow = 'hidden';
+  document.getElementById('closeBtn').addEventListener('click', closeModal);
+}
+
+function closeModal(){
+  overlay.classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+/* ======================= СОБЫТИЯ ======================= */
+grid.addEventListener('click', e => {
+  const card = e.target.closest('.card');
+  if (!card) return;
+  openModal(machines[+card.dataset.i]);
+});
+
+overlay.addEventListener('click', e => {
+  if (e.target === overlay) closeModal();
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+});
+
+document.getElementById('refresh').addEventListener('click', () => {
+  renderCards();
+  renderStats();
+  renderTimestamp();
+});
+
+/* ======================= СТАРТ ======================= */
+renderCards();
+renderStats();
+renderTimestamp();
+</script>
+</body>
+</html>
