@@ -14,6 +14,7 @@ urlpatterns = [
     path('anonim/afl/', include('anonimaeroflot.urls')),
     path('anonim/akr/', include('anonimrussia.urls')),
     path('project-finance/', include('project_finance.urls')),
+    path('monitoring/', include('monitoring.urls')),
     # Медиафайлы — только для вошедших пользователей (см. support.views.protected_media)
     path('media/<path:path>', protected_media, name='protected_media'),
 ]

@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'anonimaeroflot.apps.AnonimaeroflotConfig',
     'anonimrussia.apps.AnonimrussiaConfig',
     'project_finance.apps.ProjectFinanceConfig',
+    'monitoring.apps.MonitoringConfig',
 ]
 
 MIDDLEWARE = [
