@@ -1,0 +1,469 @@
+/*
+ * monitoring/css/monitoring.css — страница «Мониторинг узлов».
+ *
+ * Цвета и формы взяты из общих стилей сайта (base.css, statistic, project_finance):
+ * акцент #03a0dc, белые карточки с рамкой #e0e0e0 и скруглением 15px,
+ * кнопки-«пилюли» с голубой рамкой. Все классы начинаются с mon-,
+ * чтобы не пересекаться со стилями других страниц.
+ */
+
+.mon {
+  --mon-accent: #03a0dc;
+  --mon-accent-hover: #0288c1;
+  --mon-accent-soft: #e6f6fc;
+  --mon-text: #26262b;
+  --mon-muted: #6b6b70;
+  --mon-faint: #a8a8ad;
+  --mon-line: #e0e0e0;
+  --mon-fill: #f4f5f7;
+  --mon-ok: #2e8b57;
+  --mon-ok-soft: #e3f4ea;
+  --mon-ok-text: #1f6b41;
+  --mon-bad: #e24b4a;
+  --mon-bad-soft: #fde8e7;
+  --mon-bad-text: #a32b2a;
+  --mon-warn: #ff9800;
+  --mon-warn-soft: #fff3e0;
+  --mon-warn-text: #a85f00;
+  --mon-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color: var(--mon-text);
+}
+
+/* ── Панель над карточками ─────────────────────────────────────────────── */
+.mon-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.mon-stats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.mon-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 30px;
+  padding: 0 14px;
+  border: 1px solid var(--mon-line);
+  border-radius: 15px;
+  background: #fff;
+  font-size: 13px;
+  color: var(--mon-muted);
+  white-space: nowrap;
+}
+
+.mon-stat b {
+  color: var(--mon-text);
+  font-weight: 600;
+}
+
+.mon-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mon-updated {
+  font-size: 12px;
+  color: var(--mon-faint);
+  white-space: nowrap;
+}
+
+.mon-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 16px;
+  border: 1px solid var(--mon-accent);
+  border-radius: 15px;
+  background: none;
+  color: var(--mon-text);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.mon-btn:hover {
+  background: var(--mon-accent);
+  color: #fff;
+}
+
+.mon-btn i {
+  font-size: 16px;
+}
+
+/* ── Индикаторы ────────────────────────────────────────────────────────── */
+.mon-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--mon-faint);
+}
+
+.mon-dot--ok   { background: var(--mon-ok); }
+.mon-dot--bad  { background: var(--mon-bad); }
+.mon-dot--warn { background: var(--mon-warn); }
+
+.mon-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.mon-badge--ok   { background: var(--mon-ok-soft);   color: var(--mon-ok-text); }
+.mon-badge--bad  { background: var(--mon-bad-soft);  color: var(--mon-bad-text); }
+.mon-badge--warn { background: var(--mon-warn-soft); color: var(--mon-warn-text); }
+
+/* ── Сетка карточек узлов ──────────────────────────────────────────────── */
+.mon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 16px;
+}
+
+.mon-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px 18px;
+  border: 1px solid var(--mon-line);
+  border-radius: 15px;
+  background: #fff;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+.mon-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 16px;
+  bottom: 16px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--mon-ok);
+}
+
+.mon-card--warn::before { background: var(--mon-warn); }
+.mon-card--off::before  { background: var(--mon-bad); }
+
+.mon-card:hover {
+  border-color: var(--mon-accent);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.mon-card:focus-visible {
+  outline: 2px solid var(--mon-accent);
+  outline-offset: 2px;
+}
+
+.mon-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.mon-card__ip {
+  font-family: var(--mon-mono);
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  color: var(--mon-text);
+}
+
+.mon-card__name {
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--mon-faint);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.mon-card--off .mon-card__ip {
+  color: var(--mon-muted);
+}
+
+.mon-card__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+  font-size: 12px;
+  color: var(--mon-muted);
+}
+
+.mon-card__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.mon-card__row b {
+  color: var(--mon-text);
+  font-weight: 600;
+}
+
+/* ── Полоски (диск, отчёты) ───────────────────────────────────────────── */
+.mon-bar {
+  position: relative;
+  height: 6px;
+  border-radius: 3px;
+  background: #eeeeee;
+  overflow: hidden;
+}
+
+.mon-bar > i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 3px;
+  background: var(--mon-accent);
+}
+
+.mon-bar--ok   > i { background: var(--mon-ok); }
+.mon-bar--warn > i { background: var(--mon-warn); }
+.mon-bar--bad  > i { background: var(--mon-bad); }
+
+/* ── Модальное окно ────────────────────────────────────────────────────── */
+.mon-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(2px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.16s ease;
+}
+
+.mon-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.mon-modal {
+  width: 560px;
+  max-width: 100%;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  border-radius: 15px;
+  background: #fff;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.18);
+  transform: scale(0.97) translateY(-4px);
+  transition: transform 0.16s ease;
+}
+
+.mon-overlay.open .mon-modal {
+  transform: none;
+}
+
+.mon-modal__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 22px 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.mon-modal__ip {
+  font-family: var(--mon-mono);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--mon-accent);
+}
+
+.mon-modal__name {
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--mon-faint);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.mon-modal__right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mon-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--mon-line);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--mon-faint);
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+}
+
+.mon-close:hover {
+  border-color: var(--mon-accent);
+  background: #f0faff;
+  color: var(--mon-accent);
+}
+
+.mon-close i {
+  font-size: 18px;
+}
+
+.mon-modal__body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 18px 22px 22px;
+}
+
+.mon-section h4 {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: gray;
+}
+
+.mon-chips {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.mon-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: var(--mon-fill);
+  font-size: 13px;
+  color: var(--mon-text);
+}
+
+.mon-rep {
+  display: grid;
+  grid-template-columns: 70px 1fr 56px;
+  align-items: center;
+  gap: 12px;
+  padding: 5px 0;
+  font-size: 13px;
+}
+
+.mon-rep__lbl { color: var(--mon-muted); }
+
+.mon-rep__cnt {
+  text-align: right;
+  font-family: var(--mon-mono);
+  font-weight: 600;
+}
+
+.mon-rep__cnt--zero { color: var(--mon-faint); }
+
+.mon-disk__top {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.mon-disk__top span:last-child { color: var(--mon-muted); }
+
+.mon-disk .mon-bar { height: 10px; border-radius: 5px; }
+.mon-disk .mon-bar > i { border-radius: 5px; }
+
+.mon-cont {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  border: 1px solid #f0f0f0;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+.mon-cont + .mon-cont { margin-top: 6px; }
+
+.mon-cont__name { font-family: var(--mon-mono); }
+
+/* ── Мобильная версия (< 600px) ────────────────────────────────────────── */
+@media (max-width: 599px) {
+  body.m-ui .mon-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  body.m-ui .mon-actions {
+    justify-content: space-between;
+  }
+
+  body.m-ui .mon-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  body.m-ui .mon-card {
+    padding: 14px;
+    gap: 10px;
+  }
+
+  body.m-ui .mon-card__ip {
+    font-size: 15px;
+  }
+
+  body.m-ui .mon-card__head .mon-badge {
+    display: none;
+  }
+
+  /* Окно узла — «шторка» снизу во всю ширину */
+  body.m-ui .mon-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  body.m-ui .mon-modal {
+    width: 100%;
+    max-height: 88vh;
+    border-radius: 16px 16px 0 0;
+    padding-bottom: env(safe-area-inset-bottom);
+    transform: translateY(24px);
+  }
+
+  body.m-ui .mon-overlay.open .mon-modal {
+    transform: none;
+  }
+
+  body.m-ui .mon-chips {
+    grid-template-columns: 1fr 1fr;
+  }
+}
