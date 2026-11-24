@@ -181,6 +181,21 @@ async function settle() { await new Promise(resolve => setImmediate(resolve)); }
     ids.get('monTab-disks').click();
     assert.match(content.textContent, /42%/);
     assert.doesNotMatch(content.textContent, /Проверено|Использовано|Свободно|Всего/);
+    assert.equal(content.querySelectorAll('.mon-progress-fill--warning').length, 0);
+    data.disk_limit = 90;
+    data.servers[0].report.checks[1].results[0].value = 85;
+    ids.get('monRefresh').click();
+    await settle();
+    assert.equal(content.querySelectorAll('.mon-progress-fill--warning').length, 1);
+    data.servers[0].report.checks[1].results[0].value = 90;
+    ids.get('monRefresh').click();
+    await settle();
+    assert.equal(content.querySelectorAll('.mon-progress-fill--bad').length, 1);
+    data.disk_limit = 75;
+    data.servers[0].report.checks[1].results[0].value = 75;
+    ids.get('monRefresh').click();
+    await settle();
+    assert.equal(content.querySelectorAll('.mon-progress-fill--bad').length, 1);
     ids.get('monTab-reports').click();
     assert.match(content.textContent, /17/);
     ids.get('monTab-content').click();
@@ -189,7 +204,7 @@ async function settle() { await new Promise(resolve => setImmediate(resolve)); }
     assert.match(content.textContent, /<script>synthetic<\/script>/);
     ids.get('monClose').click();
     assert.equal(overlay.hidden, true);
-    assert.equal(document.activeElement, row);
+    assert.equal(document.activeElement, body.children[0]);
 
     fail = true;
     ids.get('monRefresh').click();

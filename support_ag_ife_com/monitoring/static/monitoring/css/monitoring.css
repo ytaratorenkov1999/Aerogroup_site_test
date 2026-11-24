@@ -173,3 +173,6 @@ pre.mon-check-field-value { max-width: 100%; overflow-x: auto; font-size: 11px; 
     border-radius: 10px;
     overflow: hidden;
 }
+
+.mon-progress-fill--warning { background: #e5ac2d; }
+.mon-progress-fill--bad { background: #dc4848; }

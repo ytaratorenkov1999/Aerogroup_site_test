@@ -14,6 +14,7 @@
     const tabs = [...document.querySelectorAll('.mon-tab')];
     const numberFormat = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 1 });
     let servers = new Map();
+    let diskLimit = 90;
     let selectedId = null;
     let selectedTab = 'network';
     let previousFocus = null;
@@ -217,6 +218,8 @@
                     const fill = el('div', 'mon-progress-fill');
                     const value = typeof result.value === 'number' ? result.value : 0;
                     fill.style.width = Math.min(100, Math.max(0, value)) + '%';
+                    if (value >= diskLimit) fill.classList.toggle('mon-progress-fill--bad', true);
+                    else if (value >= Math.max(0, diskLimit - 5)) fill.classList.toggle('mon-progress-fill--warning', true);
                     progress.setAttribute('role', 'meter');
                     progress.setAttribute('aria-label', 'Заполненность ' + result.target);
                     progress.setAttribute('aria-valuemin', '0');
@@ -352,6 +355,9 @@
             if (!response.ok) throw new Error('Не удалось получить данные мониторинга.');
             const data = await response.json();
             if (!Array.isArray(data.servers)) throw new Error('Сайт вернул неверный формат данных.');
+            diskLimit = typeof data.disk_limit === 'number' &&
+                Number.isFinite(data.disk_limit) && data.disk_limit > 0 && data.disk_limit <= 100
+                ? data.disk_limit : 90;
             servers = new Map(data.servers.map(server => [String(server.id), server]));
             renderServers();
             if (selectedId !== null) renderModal();

@@ -1,11 +1,13 @@
 from django.contrib import admin
 from django.http import FileResponse, Http404, HttpRequest, HttpResponse
 from django.urls import URLPattern, URLResolver, path, reverse
-from django.utils.html import format_html
+from django.utils.html import format_html, format_html_join
 from unfold.admin import ModelAdmin
 
 from .forms import MonitoringAgentForm
-from .models import MonitoringAgent, MonitoringReport, Server
+from .models import (
+    AlertRecipient, MailTemplate, MonitoringAgent, MonitoringReport, Server,
+)
 
 
 @admin.register(Server)
@@ -87,3 +89,42 @@ class MonitoringReportAdmin(ModelAdmin):
         )
         response["Cache-Control"] = "no-store"
         return response
+
+@admin.register(AlertRecipient)
+class AlertRecipientAdmin(ModelAdmin):
+    list_display = ("email", "name", "enabled")
+    list_filter = ("enabled",)
+    list_editable = ("enabled",)
+    search_fields = ("email", "name")
+    fields = ("email", "name", "enabled")
+
+@admin.register(MailTemplate)
+class MailTemplateAdmin(ModelAdmin):
+    list_display = ("category", "updated_at")
+    list_filter = ("category",)
+    readonly_fields = ("category", "variables", "updated_at")
+    fieldsets = (
+        (None, {"fields": ("category",)}),
+        ("Проблема", {"fields": ("problem_subject", "problem_body")}),
+        ("Восстановление", {"fields": ("recovery_subject", "recovery_body")}),
+        ("Доступные переменные", {"fields": ("variables",)}),
+        (None, {"fields": ("updated_at",)}),
+    )
+
+    def has_add_permission(self, request: HttpRequest) -> bool:
+        return False
+
+    def has_delete_permission(
+        self, request: HttpRequest, obj: MailTemplate | None = None,
+    ) -> bool:
+        return False
+
+    @admin.display(description="Переменные шаблона")
+    def variables(self, obj: MailTemplate) -> str:
+        from .mail_templates import available_fields
+
+        return format_html_join(
+            "", '<div><code>{}</code> — {}</div>',
+            ((f"{{{name}}}", description)
+             for name, description in available_fields(obj.category).items()),
+        )

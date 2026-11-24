@@ -7,6 +7,7 @@ from typing import Any
 from django.db.models import OuterRef, Subquery
 from django.utils import timezone as django_timezone
 
+from .thresholds import disk_limit
 from .api import MAX_BODY_BYTES
 from .models import MonitoringAgent, MonitoringReport, Server
 
@@ -182,5 +183,6 @@ def build_dashboard() -> dict[str, Any]:
         })
     return {
         "generated_at": iso_time(django_timezone.now()),
+        "disk_limit": disk_limit(),
         "servers": servers,
     }

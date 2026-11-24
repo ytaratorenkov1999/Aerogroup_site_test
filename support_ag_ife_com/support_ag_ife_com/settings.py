@@ -267,6 +267,8 @@ UNFOLD = {
                     {'title': 'Серверы', 'icon': 'dns', 'link': _admin_link('monitoring_server')},
                     {'title': 'Агенты мониторинга', 'icon': 'sensors', 'link': _admin_link('monitoring_monitoringagent')},
                     {'title': 'Отчёты мониторинга', 'icon': 'description', 'link': _admin_link('monitoring_monitoringreport')},
+                    {'title': 'Alert уведомления', 'icon': 'notifications', 'link': _admin_link('monitoring_alertrecipient')},
+                    {'title': 'Шаблоны писем', 'icon': 'mail', 'link': _admin_link('monitoring_mailtemplate')},
                 ],
             },
             {
@@ -295,3 +297,8 @@ EMAIL_USE_TLS = config('USE_TLS', cast=bool)
 EMAIL_HOST_USER = config('HOST_USER')
 EMAIL_HOST_PASSWORD = config('HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = config('HOST_USER')
+MAIL_FROM_NAME = config('MAIL_FROM_NAME', default='AG-Monitoring')
+LIMIT_DISK = config('LIMIT_DISK', default=90, cast=float)
+
+if not 0 < LIMIT_DISK <= 100:
+    raise ValueError("LIMIT_DISK must be between 0 and 100.")

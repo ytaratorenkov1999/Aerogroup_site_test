@@ -1,6 +1,7 @@
 import hashlib
 import json
 import logging
+from functools import partial
 from typing import Any
 
 from django.db import DatabaseError, transaction
@@ -10,6 +11,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.debug import sensitive_variables
 
 from .models import MonitoringAgent, MonitoringReport
+from .notifications import dispatch_notifications, record_disk_alerts
 from .storage import store_report
 from .validation import ReportValidationError, validate_report
 
@@ -129,7 +131,7 @@ def ingest_report(request: HttpRequest) -> JsonResponse:
                 ).exists():
                     return response_error("sequence_conflict", 409)
                 store_report(agent.pk, fields["report_id"], body)
-                MonitoringReport.objects.create(
+                report = MonitoringReport.objects.create(
                     agent=agent, report_id=fields["report_id"],
                     stream_id=fields["stream_id"], sequence=fields["sequence"],
                     schema_version=fields["schema_version"],
@@ -140,7 +142,11 @@ def ingest_report(request: HttpRequest) -> JsonResponse:
                 MonitoringAgent.objects.filter(pk=agent.pk).update(
                     last_seen_at=timezone.now()
                 )
+                record_disk_alerts(locked, report, data)
                 created = True
+            transaction.on_commit(
+                partial(dispatch_notifications, agent.pk), robust=True,
+            )
     except MonitoringAgent.DoesNotExist:
         return response_error("unauthorized", 401)
     except (OSError, DatabaseError):

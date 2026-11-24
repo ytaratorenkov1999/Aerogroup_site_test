@@ -93,3 +93,102 @@ class MonitoringReport(models.Model):
         from .storage import report_path
 
         return report_path(self.agent_id, self.report_id)
+
+class AlertRecipient(models.Model):
+    email = models.EmailField("Email", unique=True)
+    name = models.CharField("Имя / описание", max_length=150, blank=True)
+    enabled = models.BooleanField("Получать уведомления", default=True)
+
+    class Meta:
+        verbose_name = "Получатель Alert уведомлений"
+        verbose_name_plural = "Alert уведомления"
+        ordering = ("email",)
+
+    def __str__(self) -> str:
+        return self.email
+
+
+class DiskAlertState(models.Model):
+    agent = models.ForeignKey(MonitoringAgent, on_delete=models.CASCADE)
+    target_key = models.CharField(max_length=64)
+    target = models.TextField()
+    critical = models.BooleanField(default=False)
+    percent = models.FloatField()
+    checked_at = models.DateTimeField()
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=("agent", "target_key"),
+                name="monitoring_disk_alert_target_unique",
+            ),
+        ]
+
+
+class AlertNotification(models.Model):
+    agent = models.ForeignKey(MonitoringAgent, on_delete=models.CASCADE)
+    report_id = models.UUIDField()
+    subject = models.CharField(max_length=255)
+    body = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    sent_at = models.DateTimeField(null=True, blank=True)
+    attempts = models.PositiveIntegerField(default=0)
+    last_error = models.CharField(max_length=64, blank=True)
+
+    class Meta:
+        ordering = ("created_at", "pk")
+        constraints = [
+            models.UniqueConstraint(
+                fields=("agent", "report_id"),
+                name="monitoring_alert_report_unique",
+            ),
+        ]
+
+class MailTemplate(models.Model):
+    class Category(models.TextChoices):
+        DISK = "disk", "Диск"
+        CONTENT = "content", "Контент"
+        NETWORK = "network", "Сетевая связность"
+
+    category = models.CharField(
+        "Раздел", max_length=16, choices=Category.choices, unique=True,
+    )
+    problem_subject = models.CharField(
+        "Тема письма о проблеме", max_length=255,
+    )
+    problem_body = models.TextField(
+        "Текст письма о проблеме", max_length=20000,
+    )
+    recovery_subject = models.CharField(
+        "Тема письма о восстановлении", max_length=255,
+    )
+    recovery_body = models.TextField(
+        "Текст письма о восстановлении", max_length=20000,
+    )
+    updated_at = models.DateTimeField("Изменён", auto_now=True)
+
+    class Meta:
+        verbose_name = "Шаблон письма"
+        verbose_name_plural = "Шаблоны писем"
+        ordering = ("pk",)
+
+    def __str__(self) -> str:
+        return self.get_category_display()
+
+    def clean(self) -> None:
+        from .mail_templates import validate_text
+
+        super().clean()
+        errors: dict[str, list[str]] = {}
+        for field in (
+            "problem_subject", "problem_body", "recovery_subject", "recovery_body",
+        ):
+            try:
+                validate_text(
+                    getattr(self, field), self.category,
+                    subject=field.endswith("_subject"),
+                )
+            except ValidationError as error:
+                errors[field] = error.messages
+        if errors:
+            raise ValidationError(errors)

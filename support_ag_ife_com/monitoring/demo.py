@@ -3,6 +3,8 @@
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
+from .thresholds import disk_limit
+
 
 def build_demo_dashboard() -> dict[str, Any]:
     now = datetime.now(UTC)
@@ -64,7 +66,7 @@ def build_demo_dashboard() -> dict[str, Any]:
         checks = [
             check("NETWORK", "network", network),
             check("DISK", "memory", [
-                result("/", 57.2 + index, {"device": "/dev/vda1"}),
+                result("/", (max(0, disk_limit() - 8), max(0, disk_limit() - 5), disk_limit(), max(disk_limit(), 99.5))[index - 1], {"device": "/dev/vda1"}),
                 result("/var/pifet", 31.5 + index, {"device": "/dev/vdb1"}),
             ]),
             check("REPORT", "report", [
@@ -103,4 +105,7 @@ def build_demo_dashboard() -> dict[str, Any]:
                 "error": None, "checks": checks,
             },
         })
-    return {"generated_at": now.isoformat(), "demo": True, "servers": servers}
+    return {
+        "generated_at": now.isoformat(), "demo": True,
+        "disk_limit": disk_limit(), "servers": servers,
+    }
