@@ -1,140 +1,49 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block content %}
-
-<link rel="stylesheet" href="{% static 'monitoring/css/monitoring.css' %}?v=1">
-
-<div class="mon">
+<link rel="stylesheet" href="{% static 'monitoring/css/monitoring.css' %}?v=14">
+<div class="mon" id="monRoot" data-url="{% url 'monitoring:data' %}{% if demo %}?demo=1{% endif %}">
     <div class="mon-toolbar">
-        <div class="mon-stats" id="monStats"></div>
-        <div class="mon-actions">
-            <span class="mon-updated">Обновлено: <span id="monTs">—</span></span>
-            <button type="button" class="mon-btn" id="monRefresh">
-                <i class="ti ti-refresh"></i> Обновить
-            </button>
-        </div>
+        {% if demo %}<span class="mon-muted">Тестовые данные</span>{% endif %}
+        <button class="mon-refresh" id="monRefresh" type="button">Обновить</button>
     </div>
-
-    <div class="mon-grid" id="monGrid"></div>
-
-    <div class="mon-overlay" id="monOverlay" aria-hidden="true">
-        <div class="mon-modal" id="monModal" role="dialog" aria-modal="true" aria-labelledby="monModalTitle"></div>
+    <div class="mon-banner" id="monBanner" role="alert" hidden></div>
+    <div class="mon-table-wrap">
+        <table class="mon-table">
+            <thead>
+                <tr><th>ID</th><th>Сервер</th><th>Дата проверки</th></tr>
+            </thead>
+            <tbody id="monServers">
+                {% for server in servers %}
+                <tr class="mon-server" tabindex="0" role="button" data-id="{{ server.id }}" aria-label="Открыть сведения о сервере {{ server.name }}">
+                    <td class="mon-id">#{{ server.id }}</td>
+                    <td><strong>{{ server.name }}</strong></td>
+                    <td class="mon-date">Загрузка…</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="3" class="mon-empty">Серверов пока нет. Добавьте сервер и агента в админке.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="mon-overlay" id="monOverlay" hidden>
+        <section class="mon-modal" role="dialog" aria-modal="true" aria-labelledby="monModalTitle">
+            <div class="mon-modal__head">
+                <div>
+                    <h3 id="monModalTitle"></h3>
+                    <div class="mon-modal__ip" id="monModalIp"></div>
+                </div>
+                <button type="button" class="mon-close" id="monClose" aria-label="Закрыть">×</button>
+            </div>
+            <div class="mon-tabs" role="tablist" aria-label="Проверки площадки">
+                <button id="monTab-network" class="mon-tab active" type="button" role="tab" aria-selected="true" aria-controls="monTabContent" data-tab="network">Сеть</button>
+                <button id="monTab-disks" class="mon-tab" type="button" role="tab" aria-selected="false" aria-controls="monTabContent" data-tab="disks" tabindex="-1">Диски</button>
+                <button id="monTab-reports" class="mon-tab" type="button" role="tab" aria-selected="false" aria-controls="monTabContent" data-tab="reports" tabindex="-1">Отчёты</button>
+                <button id="monTab-content" class="mon-tab" type="button" role="tab" aria-selected="false" aria-controls="monTabContent" data-tab="content" tabindex="-1">Контент</button>
+            </div>
+            <div class="mon-tab-content" id="monTabContent" role="tabpanel" aria-labelledby="monTab-network"></div>
+        </section>
     </div>
 </div>
-
-<script>
-/* Демо-данные узлов. Позже их можно отдавать из views.py. */
-window.MONITORING_MACHINES = [
-  {
-    ip:'10.14.2.11', name:'asu-node-01', online:true,
-    streams:{passengers:true,catering:true,skyshop:true,schedule:true,crew:true,mail:true},
-    reports:[{name:'Путь 1',count:1240},{name:'Путь 2',count:86},{name:'Путь 3',count:0},{name:'Путь 4',count:412}],
-    disk:{used:318,total:500},
-    containers:[
-      {name:'asu-core',status:'running'},
-      {name:'asu-gateway',status:'running'},
-      {name:'asu-reports',status:'running'},
-      {name:'asu-mail',status:'running'}
-    ]
-  },
-  {
-    ip:'10.14.2.12', name:'asu-node-02', online:true,
-    streams:{passengers:true,catering:true,skyshop:false,schedule:true,crew:true,mail:false},
-    reports:[{name:'Путь 1',count:980},{name:'Путь 2',count:154},{name:'Путь 3',count:12},{name:'Путь 4',count:0}],
-    disk:{used:462,total:500},
-    containers:[
-      {name:'asu-core',status:'running'},
-      {name:'asu-gateway',status:'running'},
-      {name:'asu-reports',status:'restarting'},
-      {name:'asu-mail',status:'exited'}
-    ]
-  },
-  {
-    ip:'10.14.2.13', name:'asu-node-03', online:false,
-    streams:{passengers:false,catering:false,skyshop:false,schedule:false,crew:false,mail:false},
-    reports:[{name:'Путь 1',count:0},{name:'Путь 2',count:0},{name:'Путь 3',count:0},{name:'Путь 4',count:0}],
-    disk:{used:205,total:500},
-    containers:[
-      {name:'asu-core',status:'exited'},
-      {name:'asu-gateway',status:'exited'},
-      {name:'asu-reports',status:'exited'},
-      {name:'asu-mail',status:'exited'}
-    ]
-  },
-  {
-    ip:'10.14.3.21', name:'asu-node-04', online:true,
-    streams:{passengers:true,catering:true,skyshop:true,schedule:true,crew:true,mail:true},
-    reports:[{name:'Путь 1',count:2310},{name:'Путь 2',count:420},{name:'Путь 3',count:310},{name:'Путь 4',count:1180}],
-    disk:{used:120,total:1000},
-    containers:[
-      {name:'asu-core',status:'running'},
-      {name:'asu-gateway',status:'running'},
-      {name:'asu-reports',status:'running'},
-      {name:'asu-mail',status:'running'}
-    ]
-  },
-  {
-    ip:'10.14.3.22', name:'asu-node-05', online:true,
-    streams:{passengers:true,catering:true,skyshop:true,schedule:false,crew:true,mail:true},
-    reports:[{name:'Путь 1',count:640},{name:'Путь 2',count:75},{name:'Путь 3',count:140},{name:'Путь 4',count:22}],
-    disk:{used:640,total:1000},
-    containers:[
-      {name:'asu-core',status:'running'},
-      {name:'asu-gateway',status:'running'},
-      {name:'asu-reports',status:'running'},
-      {name:'asu-mail',status:'running'}
-    ]
-  },
-  {
-    ip:'10.14.3.23', name:'asu-node-06', online:true,
-    streams:{passengers:false,catering:true,skyshop:true,schedule:true,crew:false,mail:true},
-    reports:[{name:'Путь 1',count:1120},{name:'Путь 2',count:203},{name:'Путь 3',count:0},{name:'Путь 4',count:530}],
-    disk:{used:910,total:1000},
-    containers:[
-      {name:'asu-core',status:'running'},
-      {name:'asu-gateway',status:'running'},
-      {name:'asu-reports',status:'running'},
-      {name:'asu-mail',status:'exited'}
-    ]
-  },
-  {
-    ip:'10.15.1.10', name:'asu-node-07', online:false,
-    streams:{passengers:false,catering:false,skyshop:false,schedule:false,crew:false,mail:false},
-    reports:[{name:'Путь 1',count:0},{name:'Путь 2',count:0},{name:'Путь 3',count:0},{name:'Путь 4',count:0}],
-    disk:{used:60,total:250},
-    containers:[
-      {name:'asu-core',status:'exited'},
-      {name:'asu-gateway',status:'exited'},
-      {name:'asu-reports',status:'exited'},
-      {name:'asu-mail',status:'exited'}
-    ]
-  },
-  {
-    ip:'10.15.1.11', name:'asu-node-08', online:true,
-    streams:{passengers:true,catering:true,skyshop:true,schedule:true,crew:true,mail:true},
-    reports:[{name:'Путь 1',count:310},{name:'Путь 2',count:48},{name:'Путь 3',count:5},{name:'Путь 4',count:96}],
-    disk:{used:88,total:250},
-    containers:[
-      {name:'asu-core',status:'running'},
-      {name:'asu-gateway',status:'running'},
-      {name:'asu-reports',status:'running'},
-      {name:'asu-mail',status:'running'}
-    ]
-  },
-  {
-    ip:'10.15.1.12', name:'asu-node-09', online:true,
-    streams:{passengers:true,catering:false,skyshop:true,schedule:true,crew:true,mail:true},
-    reports:[{name:'Путь 1',count:760},{name:'Путь 2',count:0},{name:'Путь 3',count:64},{name:'Путь 4',count:210}],
-    disk:{used:210,total:500},
-    containers:[
-      {name:'asu-core',status:'running'},
-      {name:'asu-gateway',status:'restarting'},
-      {name:'asu-reports',status:'running'},
-      {name:'asu-mail',status:'running'}
-    ]
-  }
-];
-</script>
-<script src="{% static 'monitoring/js/monitoring.js' %}?v=1"></script>
-
+<script src="{% static 'monitoring/js/monitoring.js' %}?v=14" defer></script>
 {% endblock %}

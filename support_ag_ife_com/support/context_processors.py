@@ -23,7 +23,7 @@ from .roles import (
 _FULL_MENU = [
     {'title': 'Главная страница',    'url_name': 'home',           'icons': 'support/images/home.svg'},
     {'title': 'Статистика обращений','url_name': 'stats_hd',       'icons': 'support/images/statistic.svg'},
-    {'title': 'Мониторинг узлов',   'url_name': 'monitoring:index',       'icons': 'support/images/statistic.svg'},
+    {'title': 'Мониторинг узлов',   'url_name': 'monitoring:index',       'icons': 'support/images/monitoring.svg'},
     {'title': 'База знаний Аэрофлот','url_name': 'aeroflot:index', 'icons': 'support/images/bd.svg'},
     {'title': 'База знаний Россия',  'url_name': 'russia:index',   'icons': 'support/images/bd.svg'},
     {'title': 'График дежурств',     'url_name': 'schedule',       'icons': 'support/images/daily.svg'},

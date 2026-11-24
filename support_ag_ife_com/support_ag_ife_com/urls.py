@@ -2,8 +2,10 @@ from django.contrib import admin
 from django.urls import path, include
 
 from support.views import protected_media
+from monitoring.api import ingest_report
 
 urlpatterns = [
+    path('api/monitoring/v1/reports/', ingest_report, name='monitoring_ingest'),
     path('admin/', admin.site.urls),
     path('', include('support.urls')),
     path('statistic/', include('statistic.urls')),

@@ -11,7 +11,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config("DJANGO_KEY")
 DEBUG = config("DEBUG", cast=bool)
 
-ALLOWED_HOSTS = ['support.ag-ife.com', '10.1.0.150', '127.0.0.1']
+ALLOWED_HOSTS = ['support.ag-ife.com', '192.168.102.104', '127.0.0.1']
 CSRF_TRUSTED_ORIGINS = ['https://support.ag-ife.com']
 
 # Доверять Nginx что соединение HTTPS
@@ -262,6 +262,14 @@ UNFOLD = {
                 ],
             },
             {
+                'title': 'Мониторинг',
+                'items': [
+                    {'title': 'Серверы', 'icon': 'dns', 'link': _admin_link('monitoring_server')},
+                    {'title': 'Агенты мониторинга', 'icon': 'sensors', 'link': _admin_link('monitoring_monitoringagent')},
+                    {'title': 'Отчёты мониторинга', 'icon': 'description', 'link': _admin_link('monitoring_monitoringreport')},
+                ],
+            },
+            {
                 'title': 'Проверка знаний',
                 'items': [
                     {'title': 'Категории тестирования', 'icon': 'quiz',       'link': _admin_link('knowledge_check_testcategory')},
@@ -276,9 +284,6 @@ UNFOLD = {
 
 MEDIA_URL  = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
-# Файлы MEDIA отдаются только вошедшим (support.views.protected_media).
-# MEDIA_X_ACCEL=True — проверку делает Django, а файл отдаёт nginx из internal
-# location /protected-media/ (nginx/nginx.conf). По умолчанию включено вне DEBUG.
 MEDIA_X_ACCEL        = config('MEDIA_X_ACCEL', default=not DEBUG, cast=bool)
 MEDIA_X_ACCEL_PREFIX = '/protected-media/'
 
