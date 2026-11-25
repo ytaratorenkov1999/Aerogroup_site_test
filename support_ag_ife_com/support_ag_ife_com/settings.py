@@ -229,6 +229,7 @@ UNFOLD = {
         'navigation': [
             {
                 'title': 'Сотрудники и регистрация пользователей',
+                'collapsible': True,
                 'items': [
                     {'title': 'Сотрудники', 'icon': 'badge',                'link': _admin_link('support_employee')},
                     {'title': 'Отделы',     'icon': 'apartment',            'link': _admin_link('support_department')},
@@ -263,16 +264,19 @@ UNFOLD = {
             },
             {
                 'title': 'Мониторинг',
+                'collapsible': True,
                 'items': [
                     {'title': 'Серверы', 'icon': 'dns', 'link': _admin_link('monitoring_server')},
                     {'title': 'Агенты мониторинга', 'icon': 'sensors', 'link': _admin_link('monitoring_monitoringagent')},
                     {'title': 'Отчёты мониторинга', 'icon': 'description', 'link': _admin_link('monitoring_monitoringreport')},
                     {'title': 'Alert уведомления', 'icon': 'notifications', 'link': _admin_link('monitoring_alertrecipient')},
                     {'title': 'Шаблоны писем', 'icon': 'mail', 'link': _admin_link('monitoring_mailtemplate')},
+                    {'title': 'Правила контента', 'icon': 'timer', 'link': _admin_link('monitoring_contentrule')},
                 ],
             },
             {
                 'title': 'Проверка знаний',
+                'collapsible': True,
                 'items': [
                     {'title': 'Категории тестирования', 'icon': 'quiz',       'link': _admin_link('knowledge_check_testcategory')},
                     {'title': 'Вопросы',                'icon': 'help',       'link': _admin_link('knowledge_check_question')},

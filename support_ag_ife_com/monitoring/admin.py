@@ -1,3 +1,5 @@
+from typing import Any
+
 from django.contrib import admin
 from django.http import FileResponse, Http404, HttpRequest, HttpResponse
 from django.urls import URLPattern, URLResolver, path, reverse
@@ -6,7 +8,8 @@ from unfold.admin import ModelAdmin
 
 from .forms import MonitoringAgentForm
 from .models import (
-    AlertRecipient, MailTemplate, MonitoringAgent, MonitoringReport, Server,
+    AlertRecipient, ContentRule, MailTemplate,
+    MonitoringAgent, MonitoringReport, Server,
 )
 
 
@@ -119,6 +122,25 @@ class MailTemplateAdmin(ModelAdmin):
     ) -> bool:
         return False
 
+    def get_fieldsets(
+        self, request: HttpRequest, obj: MailTemplate | None = None,
+    ) -> tuple[tuple[str | None, dict[str, Any]], ...]:
+        if obj is None or obj.category != MailTemplate.Category.CONTENT:
+            return self.fieldsets
+        return (
+            (None, {"fields": ("category",)}),
+            ("Данные не поступают", {"fields": ("problem_subject", "problem_body")}),
+            ("Поступление данных восстановлено", {
+                "fields": ("recovery_subject", "recovery_body"),
+            }),
+            ("Обнаружены ошибки .err", {"fields": ("error_subject", "error_body")}),
+            ("Ошибки .err устранены", {
+                "fields": ("error_recovery_subject", "error_recovery_body"),
+            }),
+            ("Доступные переменные", {"fields": ("variables",)}),
+            (None, {"fields": ("updated_at",)}),
+        )
+
     @admin.display(description="Переменные шаблона")
     def variables(self, obj: MailTemplate) -> str:
         from .mail_templates import available_fields
@@ -128,3 +150,18 @@ class MailTemplateAdmin(ModelAdmin):
             ((f"{{{name}}}", description)
              for name, description in available_fields(obj.category).items()),
         )
+
+@admin.register(ContentRule)
+class ContentRuleAdmin(ModelAdmin):
+    list_display = (
+        "name", "agent", "check_id", "stream_id",
+        "silence_limit_minutes", "enabled",
+    )
+    list_filter = ("agent", "enabled")
+    list_editable = ("silence_limit_minutes", "enabled")
+    search_fields = ("name", "check_id", "stream_id", "agent__agent_id", "agent__site_id")
+    list_select_related = ("agent",)
+    fieldsets = (
+        ("Поток", {"fields": ("agent", "name", "check_id", "stream_id")}),
+        ("Контроль тишины", {"fields": ("silence_limit_minutes", "enabled")}),
+    )

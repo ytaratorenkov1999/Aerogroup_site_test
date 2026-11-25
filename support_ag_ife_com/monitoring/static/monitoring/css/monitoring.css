@@ -44,7 +44,7 @@
     border-radius: 14px;
     overflow-x: auto;
 }
-.mon-table { width: 100%; border-collapse: collapse; text-align: left; }
+.mon-table { table-layout: fixed; min-width: 440px; width: 100%; border-collapse: collapse; text-align: left; }
 .mon-table th {
     padding: 17px 20px;
     font-size: 12px;
@@ -56,20 +56,20 @@
 .mon-table td { padding: 17px 20px; border-bottom: 1px solid #edf1f5; }
 .mon-table tbody tr:last-child td { border-bottom: 0; }
 .mon-table th:first-child { width: 75px; }
-.mon-table th:last-child { width: 220px; }
+.mon-table th:last-child { width: 250px; }
 .mon-server { cursor: pointer; }
 .mon-server:hover, .mon-server:focus-visible { background: #f0f9fd; outline: none; }
 .mon-id, .mon-date { font-size: 13px; color: var(--mon-muted); white-space: nowrap; }
 .mon-date small { display: block; margin-top: 3px; }
-.mon-server-details { display: flex; gap: 12px; align-items: center; }
+.mon-server-details { min-height: 44px; display: flex; gap: 12px; align-items: center; }
 .mon-server-details strong { display: block; font-size: 14px; font-weight: 600; }
 .mon-server-details small { display: block; margin-top: 4px; font-size: 12px; color: var(--mon-muted); }
 .mon-row-status { padding-left: 20px; margin-top: 5px; font-size: 12px; color: var(--mon-muted); }
 .mon-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; flex: none; background: #a3aeb8; }
-.mon-dot--data { background: var(--mon-accent); }
+.mon-dot--data { background: #2c9560; }
 .mon-dot--ok { background: #2c9560; }
 .mon-dot--bad { background: #dc514b; }
-.mon-dot--warning { background: #d9a03b; }
+.mon-dot--warning { background: #dc514b; }
 .mon-empty { text-align: center; padding: 35px !important; color: var(--mon-muted); font-size: 13px; }
 .mon-overlay {
     position: fixed;
@@ -142,8 +142,8 @@ pre.mon-check-field-value { max-width: 100%; overflow-x: auto; font-size: 11px; 
 .mon-meter-name { font-family: ui-monospace, monospace; font-size: 12px; overflow-wrap: anywhere; min-width: 0; }
 .mon-progress { height: 8px; background: #eef2f6; border-radius: 8px; overflow: hidden; }
 .mon-progress-fill { height: 100%; background: var(--mon-accent); border-radius: 8px; }
-.mon-count-list { border: 1px solid var(--mon-border); border-radius: 10px; overflow: hidden; }
-.mon-count-row { padding: 15px; border-bottom: 1px solid var(--mon-border); font-size: 16px; }
+.mon-count-list { display: grid; gap: 10px; }
+.mon-count-row { font-size: 16px; }
 .mon-count-row:last-child { border-bottom: 0; }
 .mon-count-list .mon-notice { margin: 0; border: 0; border-radius: 0; }
 @media (max-width: 600px) {
@@ -176,3 +176,13 @@ pre.mon-check-field-value { max-width: 100%; overflow-x: auto; font-size: 11px; 
 
 .mon-progress-fill--warning { background: #e5ac2d; }
 .mon-progress-fill--bad { background: #dc4848; }
+
+.mon-count-card, .mon-content-errors {
+    border: 1px solid var(--mon-border); border-radius: 10px;
+    padding: 15px; background: #fff;
+}
+.mon-count-card > .mon-notice { margin: 12px 0 0; }
+.mon-error-stream { border-top: 1px solid var(--mon-border); padding-top: 14px; margin-top: 14px; }
+.mon-error-stream-title { font-size: 13px; margin: 0 0 7px; }
+.mon-error-file { overflow-wrap: anywhere; font-size: 12px; padding-top: 9px; }
+.mon-error-file small { display: block; margin-top: 3px; }

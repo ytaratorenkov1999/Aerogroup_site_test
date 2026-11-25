@@ -71,22 +71,11 @@
     const badge = (text, kind = 'neutral') => el('span', 'mon-pill mon-pill--' + kind, text);
 
     function state(server) {
-        if (!server.agent) return ['unknown', 'Агент не настроен'];
-        if (!server.agent.enabled) return ['unknown', 'Приём отключён'];
-        if (!server.report) return ['unknown', 'Нет отчётов'];
-        if (server.report.error) return ['warning', errorText(server.report.error)];
-        const checks = server.report.checks.filter(check => check.enabled);
-        const results = checks.flatMap(check => check.results).filter(item => item.enabled !== false);
-        if (results.some(item => item.details.group === 'platform' && item.reachable === false)) {
-            return ['bad', 'Есть недоступные серверы площадки'];
+        const indicator = server.indicator;
+        if (indicator && ['ok', 'bad', 'unknown'].includes(indicator.kind)) {
+            return [indicator.kind, indicator.text];
         }
-        if (checks.some(check => check.error) || results.some(item => item.error)) {
-            return ['warning', 'Есть ошибки получения данных'];
-        }
-        if (results.some(item => item.reachable === false)) {
-            return ['warning', 'Есть недоступные подключения'];
-        }
-        return checks.length ? ['data', 'Данные получены'] : ['unknown', 'Проверки отключены'];
+        return ['unknown', 'Нет результатов проверки'];
     }
 
     function renderServers() {
@@ -166,8 +155,8 @@
             rows.forEach(([check, result]) => {
                 const enabled = check.enabled && result.enabled !== false;
                 const reachable = result.reachable;
-                const kind = !enabled ? 'unknown' : reachable === true ? 'ok' : reachable === false ? 'bad' : 'warning';
-                const text = !enabled ? 'Отключено' : reachable === true ? 'Доступен' : reachable === false ? 'Нет соединения' : 'Нет результата';
+                const kind = !enabled ? 'unknown' : result.error || reachable === false ? 'bad' : reachable === true ? 'ok' : 'unknown';
+                const text = !enabled ? 'Отключено' : result.error ? 'Ошибка проверки' : reachable === true ? 'Доступен' : reachable === false ? 'Нет соединения' : 'Нет результата';
                 const name = result.details.name ||
                     (result.details.check_id ? result.details.check_id : check.name || check.check_id);
                 const [item, fields] = detail(
@@ -242,41 +231,82 @@
                 const row = el('div', 'mon-count-row');
                 append(row, el('span', 'mon-meter-name', result.target),
                     el('strong', '', result.error ? 'Нет данных' : number(result.value)));
-                list.appendChild(row);
-                if (result.error) list.appendChild(notice(errorText(result.error), true));
+                const card = el('div', 'mon-count-card');
+                card.appendChild(row);
+                if (result.error) card.appendChild(notice(errorText(result.error), true));
+                list.appendChild(card);
             });
             section.appendChild(list);
         });
     }
 
     function contentChecks(checks) {
+        const errorSources = [];
         checks.forEach(check => {
             const section = checkSection(check, false);
             if (!section) return;
             const list = el('div', 'mon-check-list');
             check.results.forEach(result => {
+                if (result.enabled === false) return;
                 const data = result.details;
+                errorSources.push({ check, result, data });
                 const [item, fields] = detail(
                     check.check_id + ':' + result.target,
                     data.directory || result.target,
                     badge(result.error ? 'Ошибка чтения' : result.value == null ? '-' : 'Новых: ' + number(result.value),
                         result.error ? 'bad' : 'neutral'),
-                    result.error ? 'warning' : 'data'
+                    result.error || (data.err_total_count ?? data.err_count) > 0 ? 'bad' : 'ok'
                 );
                 if (result.error) field(fields, 'Ошибка', errorText(result.error));
                 field(fields, 'Новых файлов', result.error ? 'Нет полных данных' : number(result.value));
-                field(fields, 'Последний файл', data.last_file || '-');
-                field(fields, 'Время изменения последнего файла', date(data.last_time));
-                field(fields, 'Файлов .err за период', number(data.err_count));
-                const files = Array.isArray(data.err_files) ? data.err_files : [];
-                files.forEach(file => {
-                    const path = typeof file === 'string' ? file : file?.path;
-                    if (path) field(fields, 'Файл .err', path);
-                });
+                field(fields, 'Последний файл',
+                    ('last_normal_file' in data ? data.last_normal_file : data.last_file) || '-');
+                field(fields, 'Время изменения последнего файла',
+                    date('last_normal_time' in data ? data.last_normal_time : data.last_time));
                 list.appendChild(item);
             });
             section.appendChild(list);
         });
+        if (!checks.some(check => check.enabled)) return;
+        const errors = el('section', 'mon-section mon-content-errors');
+        errors.appendChild(el('h4', 'mon-section-title', 'Наличие .err файлов'));
+        let total = 0;
+        let incomplete = errorSources.length === 0;
+        let legacy = false;
+        errorSources.forEach(({ check, result, data }) => {
+            const fullCount = data.err_total_count;
+            const hasFullCount = typeof fullCount === 'number' && Number.isFinite(fullCount) && fullCount >= 0;
+            const count = hasFullCount ? fullCount : data.err_count;
+            if (!hasFullCount) legacy = true;
+            if (typeof count === 'number' && Number.isFinite(count) && count >= 0) total += count;
+            else incomplete = true;
+            if (check.error || result.error) incomplete = true;
+        });
+        field(errors, 'Общее количество ошибок',
+            incomplete || legacy ? total > 0 ? 'Не менее ' + number(total) : '-' : number(total));
+        if (legacy) errors.appendChild(notice('Часть данных содержит только ошибки за период проверки.'));
+        if (incomplete) errors.appendChild(notice('Не все каталоги удалось проверить полностью.', true));
+        errorSources.forEach(({ check, result, data }) => {
+            const files = Array.isArray(data.err_latest_files)
+                ? data.err_latest_files : Array.isArray(data.err_files) ? data.err_files : [];
+            if (!files.length) return;
+            const group = el('div', 'mon-error-stream');
+            const name = check.name && check.name !== check.check_id ? check.name : label(check.check_id);
+            group.appendChild(el('h5', 'mon-error-stream-title',
+                name + (result.target !== 'DIR' ? ' · ' + result.target : '')));
+            if (data.directory) group.appendChild(el('div', 'mon-muted', data.directory));
+            files.slice(0, 5).forEach(file => {
+                const path = typeof file === 'string' ? file : file?.path;
+                if (!path) return;
+                const line = el('div', 'mon-error-file', path);
+                if (typeof file === 'object' && file.modified_at) {
+                    line.appendChild(el('small', 'mon-muted', date(file.modified_at)));
+                }
+                group.appendChild(line);
+            });
+            errors.appendChild(group);
+        });
+        content.appendChild(errors);
     }
 
     function renderModal() {
@@ -340,6 +370,16 @@
         selectedId = null;
     }
 
+    function applyDashboard(data) {
+        if (!Array.isArray(data.servers)) throw new Error('Сайт вернул неверный формат данных.');
+        diskLimit = typeof data.disk_limit === 'number' &&
+            Number.isFinite(data.disk_limit) && data.disk_limit > 0 && data.disk_limit <= 100
+            ? data.disk_limit : 90;
+        servers = new Map(data.servers.map(server => [String(server.id), server]));
+        renderServers();
+        if (selectedId !== null) renderModal();
+    }
+
     async function refresh() {
         if (busy) return;
         busy = true;
@@ -354,13 +394,7 @@
             if (response.status === 401) throw new Error('Сессия завершена. Войдите на сайт повторно.');
             if (!response.ok) throw new Error('Не удалось получить данные мониторинга.');
             const data = await response.json();
-            if (!Array.isArray(data.servers)) throw new Error('Сайт вернул неверный формат данных.');
-            diskLimit = typeof data.disk_limit === 'number' &&
-                Number.isFinite(data.disk_limit) && data.disk_limit > 0 && data.disk_limit <= 100
-                ? data.disk_limit : 90;
-            servers = new Map(data.servers.map(server => [String(server.id), server]));
-            renderServers();
-            if (selectedId !== null) renderModal();
+            applyDashboard(data);
             banner.hidden = true;
         } catch (error) {
             banner.textContent = error.name === 'AbortError'
@@ -423,5 +457,14 @@
     });
     refreshButton.addEventListener('click', refresh);
     setInterval(() => { if (!document.hidden) refresh(); }, 60000);
-    refresh();
+    const initial = document.getElementById('monInitialData');
+    if (initial) {
+        try {
+            applyDashboard(JSON.parse(initial.textContent));
+        } catch {
+            refresh();
+        }
+    } else {
+        refresh();
+    }
 })();

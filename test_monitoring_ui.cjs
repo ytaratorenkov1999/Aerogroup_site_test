@@ -110,7 +110,8 @@ const base = { enabled: true, error: null, finished_at: now, duration_ms: 1 };
 const data = {
     generated_at: now,
     servers: [{
-        id: 1, name: 'Synthetic <img src=x onerror=alert(1)>', ip_address: '192.0.2.1',
+        indicator: { kind: 'bad', text: 'Синтетическая проблема' },
+id: 1, name: 'Synthetic <img src=x onerror=alert(1)>', ip_address: '192.0.2.1',
         agent: { site_id: 'test', agent_id: 'synthetic', enabled: true },
         report: {
             checked_at: now, received_at: now, error: null,
@@ -137,6 +138,9 @@ const data = {
         }
     }]
 };
+if (process.argv.includes('--bootstrap')) {
+    make('script', 'monInitialData', rootNode).textContent = JSON.stringify(data);
+}
 let fail = false;
 let calls = 0;
 vm.runInNewContext(fs.readFileSync(path.join(
@@ -157,7 +161,7 @@ async function settle() { await new Promise(resolve => setImmediate(resolve)); }
 
 (async () => {
     await settle();
-    assert.equal(calls, 1);
+    assert.equal(calls, process.argv.includes('--bootstrap') ? 0 : 1);
     const body = ids.get('monServers');
     assert.equal(body.children.length, 1);
     assert.doesNotMatch(body.textContent, /Есть недоступные|Данные получены|192\.0\.2/);
@@ -178,6 +182,10 @@ async function settle() { await new Promise(resolve => setImmediate(resolve)); }
         assert.doesNotMatch(summary.textContent, /192\.0\.2|443|Доступен|Нет соединения/);
     });
     assert.match(content.textContent, /192\.0\.2/);
+    data.servers[0].report.checks[0].results[0].reachable = true;
+    ids.get('monRefresh').click();
+    await settle();
+    assert.equal(content.querySelectorAll('.mon-dot--bad').length, 1);
     ids.get('monTab-disks').click();
     assert.match(content.textContent, /42%/);
     assert.doesNotMatch(content.textContent, /Проверено|Использовано|Свободно|Всего/);
@@ -198,8 +206,23 @@ async function settle() { await new Promise(resolve => setImmediate(resolve)); }
     assert.equal(content.querySelectorAll('.mon-progress-fill--bad').length, 1);
     ids.get('monTab-reports').click();
     assert.match(content.textContent, /17/);
+    assert.equal(content.querySelectorAll('.mon-count-card').length, 1);
     ids.get('monTab-content').click();
     assert.match(content.textContent, /sample.err/);
+    assert.equal(content.querySelectorAll('.mon-content-errors').length, 1);
+    content.querySelectorAll('details').forEach(item => {
+        assert.doesNotMatch(item.textContent, /Файлов \.err за период|sample\.err/);
+    });
+    const inventory = data.servers[0].report.checks[3].results[0].details;
+    inventory.err_total_count = 7;
+    inventory.err_latest_files = Array.from({length: 6}, (_, index) => ({
+        path: 'latest-' + index + '.err', modified_at: now,
+    }));
+    ids.get('monRefresh').click();
+    await settle();
+    assert.equal(content.querySelectorAll('.mon-error-file').length, 5);
+    assert.match(content.textContent, /Общее количество ошибок/);
+    assert.doesNotMatch(content.textContent, /latest-5\.err/);
     assert.doesNotMatch(content.textContent, /Проверено:/);
     assert.match(content.textContent, /<script>synthetic<\/script>/);
     ids.get('monClose').click();
@@ -228,5 +251,14 @@ async function settle() { await new Promise(resolve => setImmediate(resolve)); }
     ids.get('monTab-content').click();
     assert.doesNotMatch(content.textContent, /Нет данных|Файлов нет|Проверено/);
     assert.match(content.textContent, /-/);
+    data.servers[0].indicator = { kind: 'ok', text: 'Проблем не обнаружено' };
+    ids.get('monRefresh').click();
+    await settle();
+    assert.equal(body.querySelectorAll('.mon-dot--ok').length, 1);
+    assert.equal(body.querySelectorAll('.mon-dot--data').length, 0);
+    data.servers[0].indicator = { kind: 'bad', text: 'Проблема' };
+    ids.get('monRefresh').click();
+    await settle();
+    assert.equal(body.querySelectorAll('.mon-dot--bad').length, 1);
     console.log('UI DOM checks passed: four tabs, modal, network groups, text escaping, fetch errors, missing file.');
 })().catch(error => { console.error(error); process.exitCode = 1; });

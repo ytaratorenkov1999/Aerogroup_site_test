@@ -8,6 +8,7 @@ from django.db.models import OuterRef, Subquery
 from django.utils import timezone as django_timezone
 
 from .thresholds import disk_limit
+from .presentation import server_indicator
 from .api import MAX_BODY_BYTES
 from .models import MonitoringAgent, MonitoringReport, Server
 
@@ -84,7 +85,8 @@ def normalize_check(check: dict[str, Any]) -> dict[str, Any]:
                     "check_id", "name", "group", "method", "host", "ip", "port",
                     "started_at", "finished_at", "output", "device",
                     "size_gb", "used_gb", "avail_gb", "directory", "last_file",
-                    "last_time", "err_count", "err_files",
+                    "last_time", "err_count", "err_files", "err_total_count",
+                    "err_latest_files", "last_normal_file", "last_normal_time",
                 )
                 if key in details
             },
@@ -181,6 +183,8 @@ def build_dashboard() -> dict[str, Any]:
             } if agent else None,
             "report": read_snapshot(report) if report else None,
         })
+    for server in servers:
+        server["indicator"] = server_indicator(server, disk_limit())
     return {
         "generated_at": iso_time(django_timezone.now()),
         "disk_limit": disk_limit(),

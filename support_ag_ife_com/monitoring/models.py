@@ -2,6 +2,7 @@ import hashlib
 from pathlib import Path
 
 from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
 
 
@@ -165,6 +166,18 @@ class MailTemplate(models.Model):
     recovery_body = models.TextField(
         "Текст письма о восстановлении", max_length=20000,
     )
+    error_subject = models.CharField(
+        "Тема письма об ошибках .err", max_length=255, blank=True, default="",
+    )
+    error_body = models.TextField(
+        "Текст письма об ошибках .err", max_length=20000, blank=True, default="",
+    )
+    error_recovery_subject = models.CharField(
+        "Тема письма об устранении ошибок", max_length=255, blank=True, default="",
+    )
+    error_recovery_body = models.TextField(
+        "Текст письма об устранении ошибок", max_length=20000, blank=True, default="",
+    )
     updated_at = models.DateTimeField("Изменён", auto_now=True)
 
     class Meta:
@@ -180,9 +193,15 @@ class MailTemplate(models.Model):
 
         super().clean()
         errors: dict[str, list[str]] = {}
-        for field in (
+        fields = [
             "problem_subject", "problem_body", "recovery_subject", "recovery_body",
-        ):
+        ]
+        if self.category == self.Category.CONTENT:
+            fields.extend((
+                "error_subject", "error_body",
+                "error_recovery_subject", "error_recovery_body",
+            ))
+        for field in fields:
             try:
                 validate_text(
                     getattr(self, field), self.category,
@@ -192,3 +211,53 @@ class MailTemplate(models.Model):
                 errors[field] = error.messages
         if errors:
             raise ValidationError(errors)
+
+class ContentRule(models.Model):
+    agent = models.ForeignKey(
+        MonitoringAgent, on_delete=models.PROTECT,
+        related_name="content_rules", verbose_name="Агент / площадка",
+    )
+    name = models.CharField("Название потока", max_length=150)
+    check_id = models.CharField(
+        "ID проверки", max_length=100,
+        validators=[RegexValidator(
+            r"^[A-Za-z0-9_-]+$",
+            "Допустимы латинские буквы, цифры, дефис и подчёркивание.",
+        )],
+        help_text="Идентификатор из JSON агента, например DATA_CREWID.",
+    )
+    stream_id = models.CharField(
+        "ID потока", max_length=100, default="DIR",
+        validators=[RegexValidator(
+            r"^[A-Za-z0-9_-]+$",
+            "Допустимы латинские буквы, цифры, дефис и подчёркивание.",
+        )],
+        help_text=(
+            "Значение results[].target. Для настройки DATA_CREWID_DIR "
+            "укажите DIR; для DATA_CREWID_DIR_MAIN — MAIN."
+        ),
+    )
+    silence_limit_minutes = models.PositiveIntegerField(
+        "Допустимая тишина, минут",
+        validators=[MinValueValidator(1)],
+        help_text="Например: 120 — 2 часа; 180 — 3 часа; 2880 — 48 часов.",
+    )
+    enabled = models.BooleanField("Контроль тишины", default=True)
+
+    class Meta:
+        verbose_name = "Правило контента"
+        verbose_name_plural = "Правила контента"
+        ordering = ("agent__site_id", "check_id", "stream_id")
+        constraints = [
+            models.UniqueConstraint(
+                fields=("agent", "check_id", "stream_id"),
+                name="monitoring_content_rule_unique",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(silence_limit_minutes__gte=1),
+                name="monitoring_content_silence_positive",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.agent} — {self.name}"

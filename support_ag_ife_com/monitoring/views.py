@@ -1,19 +1,36 @@
+from datetime import UTC
+
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render
+from django.utils.dateparse import parse_datetime
 
 from .dashboard import build_dashboard
 from .demo import build_demo_dashboard
-from .models import Server
+from datetime import UTC
+
+from django.utils.dateparse import parse_datetime
 
 
 @login_required(login_url="login")
 def index(request: HttpRequest) -> HttpResponse:
-    return render(request, "monitoring/monitoring.html", {
-        "title": "Мониторинг площадок",
-        "servers": [] if request.GET.get("demo") == "1" else Server.objects.all(),
-        "demo": request.GET.get("demo") == "1",
+    demo = request.GET.get("demo") == "1"
+    dashboard = build_demo_dashboard() if demo else build_dashboard()
+    for server in dashboard["servers"]:
+        checked = (server.get("report") or {}).get("checked_at")
+        parsed = parse_datetime(checked) if checked else None
+        server["checked_at_display"] = (
+            parsed.astimezone(UTC).strftime("%d.%m.%Y, %H:%M:%S UTC")
+            if parsed else "-"
+        )
+    response = render(request, "monitoring/monitoring.html", {
+        "title": "Мониторинг хостов",
+        "servers": dashboard["servers"],
+        "initial_dashboard": dashboard,
+        "demo": demo,
     })
+    response["Cache-Control"] = "no-store"
+    return response
 
 
 def data(request: HttpRequest) -> JsonResponse:

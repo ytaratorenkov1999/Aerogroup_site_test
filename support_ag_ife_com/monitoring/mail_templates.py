@@ -20,7 +20,9 @@ CATEGORY_FIELDS = {
         "stream_name": "название потока", "directory": "каталог",
         "last_time": "дата последнего файла в UTC",
         "silence_minutes": "длительность тишины в минутах",
+        "silence_limit_minutes": "допустимая тишина в минутах",
         "error_count": "количество файлов с ошибками",
+        "error_files": "список файлов с ошибками",
     },
     "network": {
         "stream_name": "название потока", "target": "адрес подключения",
@@ -40,10 +42,14 @@ DEFAULT_TEMPLATES = {
         "recovery_body": BODY,
     },
     "content": {
-        "problem_subject": "AG-Monitoring: проблема с контентом",
+        "problem_subject": "AG-Monitoring: данные не поступают",
         "problem_body": BODY,
-        "recovery_subject": "AG-Monitoring: контент — восстановление",
+        "recovery_subject": "AG-Monitoring: поступление данных восстановлено",
         "recovery_body": BODY,
+        "error_subject": "AG-Monitoring: обнаружены .err файлы",
+        "error_body": BODY,
+        "error_recovery_subject": "AG-Monitoring: ошибки контента устранены",
+        "error_recovery_body": BODY,
     },
     "network": {
         "problem_subject": "AG-Monitoring: сетевая связность нарушена",
@@ -85,9 +91,11 @@ def render_notification(
     """Render only allowlisted string substitutions; no template execution."""
     from .models import MailTemplate
 
-    if category not in DEFAULT_TEMPLATES or event not in {"problem", "recovery"}:
-        raise ValueError("Unknown notification template category or event")
+    if category not in DEFAULT_TEMPLATES:
+        raise ValueError("Unknown notification template category")
     defaults = DEFAULT_TEMPLATES[category]
+    if f"{event}_subject" not in defaults or f"{event}_body" not in defaults:
+        raise ValueError("Unknown notification template event")
     template = MailTemplate.objects.filter(category=category).first()
     subject_key, body_key = f"{event}_subject", f"{event}_body"
     subject = getattr(template, subject_key) if template else defaults[subject_key]

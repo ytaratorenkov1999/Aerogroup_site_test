@@ -4,6 +4,7 @@ from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from .thresholds import disk_limit
+from .presentation import server_indicator
 
 
 def build_demo_dashboard() -> dict[str, Any]:
@@ -80,6 +81,10 @@ def build_demo_dashboard() -> dict[str, Any]:
                     "directory": "/var/pifet/data/crewlist",
                     "last_file": "crewlist_demo.xml", "last_time": last_file_time,
                     "err_count": 1 if index == 3 else 0,
+                    "err_total_count": 1 if index == 3 else 0,
+                    "err_latest_files": ([{
+                        "path": "crewlist_demo.err", "modified_at": checked,
+                    }] if index == 3 else []),
                     "err_files": ["crewlist_demo.err"] if index == 3 else [],
                 }),
             ]),
@@ -88,6 +93,7 @@ def build_demo_dashboard() -> dict[str, Any]:
                     "directory": "/var/pifet/data/pax",
                     "last_file": None, "last_time": None,
                     "err_count": None if index == 4 else 0, "err_files": [],
+                    "err_total_count": 0, "err_latest_files": [],
                 }),
             ]),
         ]
@@ -105,6 +111,8 @@ def build_demo_dashboard() -> dict[str, Any]:
                 "error": None, "checks": checks,
             },
         })
+    for server in servers:
+        server["indicator"] = server_indicator(server, disk_limit())
     return {
         "generated_at": now.isoformat(), "demo": True,
         "disk_limit": disk_limit(), "servers": servers,
